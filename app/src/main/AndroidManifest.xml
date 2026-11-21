@@ -5,6 +5,8 @@
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Local-network sync with the Garasi PC app. -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <!-- Only needed to save the Garasi album on Android 8–9; MediaStore needs nothing on 10+. -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
     <!-- Floating posting checklist over the marketplace app. -->
@@ -44,6 +46,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.Garasi"
+        android:networkSecurityConfig="@xml/network_security_config"
         tools:targetApi="36">
 
         <activity

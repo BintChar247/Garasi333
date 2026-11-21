@@ -4,22 +4,35 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
+import java.util.UUID
 
+fun newUid(): String = UUID.randomUUID().toString()
+
+@Serializable
 enum class ItemStatus { DRAFT, READY, POSTED, SOLD }
 
+@Serializable
 enum class Category { ELECTRONICS, FASHION, BOOKS, TOYS, HOME, HOBBY, OTHER }
 
+@Serializable
 enum class Condition { NEW, LIKE_NEW, USED_GOOD, USED_FLAWS }
 
+@Serializable
 enum class ListingLang { ID, EN;
     val other: ListingLang get() = if (this == ID) EN else ID
 }
 
+@Serializable
 enum class Platform { TOKOPEDIA, SHOPEE, OLX }
 
+@Serializable
 @Entity(tableName = "items")
 data class Item(
+    /** Local database id (not synced). */
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    /** Stable id shared by all devices. */
+    val uid: String = newUid(),
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     val status: ItemStatus = ItemStatus.DRAFT,
@@ -53,6 +66,7 @@ data class Item(
     val soldPlatform: Platform? = null,
     val soldAt: Long = 0,
 ) {
+
     fun title(lang: ListingLang = listingLang) = if (lang == ListingLang.ID) titleId else titleEn
     fun description(lang: ListingLang = listingLang) = if (lang == ListingLang.ID) descId else descEn
     fun withText(lang: ListingLang, title: String? = null, desc: String? = null): Item =
@@ -64,6 +78,7 @@ data class Item(
             .ifBlank { listOf(brand, model).filter { it.isNotBlank() }.joinToString(" ") }
 }
 
+@Serializable
 @Entity(
     tableName = "photos",
     foreignKeys = [ForeignKey(
@@ -75,6 +90,9 @@ data class Item(
 data class Photo(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val itemId: Long,
+    val uid: String = newUid(),
+    val itemUid: String = "",
+    val updatedAt: Long = System.currentTimeMillis(),
     /** Untouched copy of the original image (app-private storage). */
     val originalPath: String,
     /** Compressed (<1 MB), possibly square-cropped image used for listing. */
@@ -96,6 +114,7 @@ data class Photo(
     val score: Int? = null,
 )
 
+@Serializable
 @Entity(
     tableName = "listings",
     primaryKeys = ["itemId", "platform"],
@@ -110,4 +129,17 @@ data class PlatformListing(
     val url: String = "",
     val postedAt: Long = System.currentTimeMillis(),
     val removed: Boolean = false,
+    val itemUid: String = "",
+    val updatedAt: Long = System.currentTimeMillis(),
+) {
+    val key: String get() = "$itemUid/${platform.name}"
+}
+
+/** Records a deletion so it can be synced to other devices. kind = item | photo | listing */
+@Serializable
+@Entity(tableName = "tombstones")
+data class Tombstone(
+    @PrimaryKey val uid: String,
+    val kind: String,
+    val deletedAt: Long = System.currentTimeMillis(),
 )

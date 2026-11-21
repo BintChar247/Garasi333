@@ -16,4 +16,5 @@ class GarasiApp : Application() {
     val analyzer by lazy { PhotoAnalyzer(photoStore) }
     val identifier by lazy { ItemIdentifier(this) }
     val backup by lazy { Backup(this, db, settings) }
+    val sync by lazy { com.garasi.app.sync.SyncManager(this, db) }
 }

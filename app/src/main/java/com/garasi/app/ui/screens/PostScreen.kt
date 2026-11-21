@@ -63,6 +63,7 @@ import com.garasi.app.platform.ChecklistOverlayService
 import com.garasi.app.platform.Clipboard
 import com.garasi.app.platform.GallerySaver
 import com.garasi.app.platform.Marketplace
+import com.garasi.app.platform.MarketplaceLauncher
 import com.garasi.app.text.Money
 import com.garasi.app.ui.BigButton
 import com.garasi.app.ui.CollectMessages
@@ -120,9 +121,9 @@ fun PostScreen(nav: NavController, vm: ItemViewModel) {
                 album = "Garasi/$album", price = if (item.askPrice > 0) Money.format(item.askPrice) else "—",
                 priceDigits = if (item.askPrice > 0) item.askPrice.toString() else "", weight = weight,
             ))
-            when (Marketplace.openSell(ctx, platform)) {
-                Marketplace.Opened.NOTHING -> vm.say(R.string.msg_cannot_open_marketplace)
-                Marketplace.Opened.WEB -> vm.say(R.string.msg_opened_web, saved)
+            when (MarketplaceLauncher.openSell(ctx, platform)) {
+                MarketplaceLauncher.Opened.NOTHING -> vm.say(R.string.msg_cannot_open_marketplace)
+                MarketplaceLauncher.Opened.WEB -> vm.say(R.string.msg_opened_web, saved)
                 else -> vm.say(R.string.msg_ready_to_paste, saved)
             }
         }
@@ -202,7 +203,7 @@ fun PostScreen(nav: NavController, vm: ItemViewModel) {
                         }
                         if (l == null) TextButton({ urlDialogFor = p }) { Text(stringResource(R.string.mark_posted)) }
                         else {
-                            if (l.url.isNotBlank()) IconButton({ Marketplace.openUrl(ctx, l.url) }) { Icon(Icons.AutoMirrored.Filled.OpenInNew, stringResource(R.string.open)) }
+                            if (l.url.isNotBlank()) IconButton({ MarketplaceLauncher.openUrl(ctx, l.url) }) { Icon(Icons.AutoMirrored.Filled.OpenInNew, stringResource(R.string.open)) }
                             TextButton({ vm.unmarkPosted(l) }) { Text(stringResource(R.string.unmark)) }
                         }
                     }
@@ -279,7 +280,7 @@ fun SoldDialog(vm: ItemViewModel, item: Item, onDone: () -> Unit) {
                         Checkbox(l.removed, { vm.setListingRemoved(l, it) })
                         Text(stringResource(platformLabel(l.platform)), Modifier.weight(1f))
                         TextButton({
-                            if (l.url.isNotBlank()) Marketplace.openUrl(ctx, l.url) else Marketplace.openSell(ctx, l.platform)
+                            if (l.url.isNotBlank()) MarketplaceLauncher.openUrl(ctx, l.url) else MarketplaceLauncher.openSell(ctx, l.platform)
                         }) { Text(stringResource(R.string.open)) }
                     }
                 }

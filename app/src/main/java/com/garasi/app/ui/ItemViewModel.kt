@@ -16,6 +16,7 @@ import com.garasi.app.data.ListingLang
 import com.garasi.app.data.Photo
 import com.garasi.app.data.Platform
 import com.garasi.app.data.PlatformListing
+import com.garasi.app.data.Tombstone
 import com.garasi.app.ml.IdentifyResult
 import com.garasi.app.quality.QualityChecker
 import com.garasi.app.quality.QualityReport
@@ -129,9 +130,10 @@ class ItemViewModel(app: Application, val itemId: Long) : AndroidViewModel(app) 
     private suspend fun insertPhoto(original: String, path: String, w: Int, h: Int) = writeLock.withLock {
         val existing = dao.photos(itemId)
         val wantFlaw = pendingFlawShot
+        val itemUid = _item.value?.uid ?: dao.getItem(itemId)?.uid.orEmpty()
         dao.insertPhoto(
             Photo(
-                itemId = itemId, originalPath = original, path = path, position = existing.size,
+                itemId = itemId, itemUid = itemUid, originalPath = original, path = path, position = existing.size,
                 isCover = existing.isEmpty(), width = w, height = h,
                 isFlaw = wantFlaw, angle = if (wantFlaw) "flaw" else "",
             )
@@ -163,6 +165,7 @@ class ItemViewModel(app: Application, val itemId: Long) : AndroidViewModel(app) 
     fun deletePhoto(photo: Photo) = viewModelScope.launch {
         writeLock.withLock {
             dao.deletePhoto(photo)
+            dao.upsertTombstone(Tombstone(photo.uid, "photo"))
             g.photoStore.delete(photo.originalPath, photo.path)
             val rest = dao.photos(itemId).mapIndexed { i, p -> p.copy(position = i) }
             val fixed = if (rest.isNotEmpty() && rest.none { it.isCover })
@@ -289,12 +292,17 @@ class ItemViewModel(app: Application, val itemId: Long) : AndroidViewModel(app) 
     // ------------------------------------------------------------------ status / posting
 
     fun markPosted(platform: Platform, url: String) = viewModelScope.launch {
-        writeLock.withLock { dao.upsertListing(PlatformListing(itemId, platform, url.trim())) }
+        writeLock.withLock {
+            dao.upsertListing(PlatformListing(itemId, platform, url.trim(), itemUid = _item.value?.uid.orEmpty()))
+        }
         update { if (it.status == ItemStatus.SOLD) it else it.copy(status = ItemStatus.POSTED) }
     }
 
     fun unmarkPosted(listing: PlatformListing) = viewModelScope.launch {
-        writeLock.withLock { dao.deleteListing(listing) }
+        writeLock.withLock {
+            dao.deleteListing(listing)
+            dao.upsertTombstone(Tombstone(listing.key, "listing"))
+        }
         if (listings.value.size <= 1) update { if (it.status == ItemStatus.POSTED) it.copy(status = ItemStatus.READY) else it }
     }
 
@@ -317,8 +325,12 @@ class ItemViewModel(app: Application, val itemId: Long) : AndroidViewModel(app) 
     fun deleteItem(onDone: () -> Unit) = viewModelScope.launch {
         val cur = _item.value ?: return@launch
         writeLock.withLock {
-            dao.photos(itemId).forEach { g.photoStore.delete(it.originalPath, it.path) }
+            dao.photos(itemId).forEach {
+                g.photoStore.delete(it.originalPath, it.path)
+                dao.upsertTombstone(Tombstone(it.uid, "photo"))
+            }
             dao.delete(cur)
+            dao.upsertTombstone(Tombstone(cur.uid, "item"))
         }
         setItem(null)
         onDone()

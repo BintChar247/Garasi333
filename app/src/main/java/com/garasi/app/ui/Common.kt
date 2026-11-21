@@ -165,3 +165,12 @@ fun statusColor(s: ItemStatus) = when (s) {
     ItemStatus.POSTED -> StatusPosted
     ItemStatus.SOLD -> StatusSold
 }
+
+/** Looks up a string resource by name — used for keys that come from the shared core module. */
+fun android.content.Context.keyString(key: String, vararg args: Any): String {
+    val id = resources.getIdentifier(key, "string", packageName)
+    return if (id == 0) key else getString(id, *args)
+}
+
+@Composable
+fun keyResource(key: String, vararg args: Any): String = LocalContext.current.keyString(key, *args)

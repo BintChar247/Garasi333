@@ -14,6 +14,7 @@ import com.garasi.app.data.Platform
 import com.garasi.app.data.PlatformListing
 import com.garasi.app.data.SettingsStore
 import com.garasi.app.data.ThemeMode
+import com.garasi.app.data.newUid
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -80,7 +81,12 @@ class Backup(private val context: Context, private val db: GarasiDb, private val
         val items = data.getJSONArray("items").objects().map { parseItem(it) }
         val photos = data.getJSONArray("photos").objects().map { parsePhoto(it).let { p -> p.copy(path = local(p.path), originalPath = local(p.originalPath)) } }
         val listings = data.optJSONArray("listings")?.objects()?.map { parseListing(it) } ?: emptyList()
-        db.dao().replaceAll(items, photos, listings)
+        val uidById = items.associate { it.id to it.uid }
+        db.dao().replaceAll(
+            items,
+            photos.map { if (it.itemUid.isBlank()) it.copy(itemUid = uidById[it.itemId].orEmpty()) else it },
+            listings.map { if (it.itemUid.isBlank()) it.copy(itemUid = uidById[it.itemId].orEmpty()) else it },
+        )
         data.optJSONObject("settings")?.let { s -> settings.update { parseSettings(s, it) } }
         items.size
     }
@@ -99,7 +105,7 @@ class Backup(private val context: Context, private val db: GarasiDb, private val
     )
 
     private fun itemJson(i: Item) = JSONObject()
-        .put("id", i.id).put("createdAt", i.createdAt).put("updatedAt", i.updatedAt).put("status", i.status.name)
+        .put("id", i.id).put("uid", i.uid).put("createdAt", i.createdAt).put("updatedAt", i.updatedAt).put("status", i.status.name)
         .put("category", i.category.name).put("brand", i.brand).put("model", i.model).put("variant", i.variant)
         .put("condition", i.condition.name).put("yearBought", i.yearBought).put("usageAge", i.usageAge)
         .put("flaws", i.flaws).put("included", i.included).put("reasonSelling", i.reasonSelling)
@@ -111,7 +117,7 @@ class Backup(private val context: Context, private val db: GarasiDb, private val
         .put("soldPrice", i.soldPrice).put("soldPlatform", i.soldPlatform?.name ?: "").put("soldAt", i.soldAt)
 
     private fun parseItem(o: JSONObject) = Item(
-        id = o.getLong("id"), createdAt = o.optLong("createdAt"), updatedAt = o.optLong("updatedAt"),
+        id = o.getLong("id"), uid = o.optString("uid").ifBlank { newUid() }, createdAt = o.optLong("createdAt"), updatedAt = o.optLong("updatedAt"),
         status = runCatching { ItemStatus.valueOf(o.getString("status")) }.getOrDefault(ItemStatus.DRAFT),
         category = runCatching { Category.valueOf(o.getString("category")) }.getOrDefault(Category.OTHER),
         brand = o.optString("brand"), model = o.optString("model"), variant = o.optString("variant"),
@@ -132,7 +138,7 @@ class Backup(private val context: Context, private val db: GarasiDb, private val
     )
 
     private fun photoJson(p: Photo) = JSONObject()
-        .put("id", p.id).put("itemId", p.itemId).put("originalPath", p.originalPath).put("path", p.path)
+        .put("id", p.id).put("itemId", p.itemId).put("uid", p.uid).put("itemUid", p.itemUid).put("updatedAt", p.updatedAt).put("originalPath", p.originalPath).put("path", p.path)
         .put("position", p.position).put("isCover", p.isCover).put("isFlaw", p.isFlaw).put("angle", p.angle)
         .put("width", p.width).put("height", p.height)
         .put("sharpness", p.sharpness ?: JSONObject.NULL).put("brightness", p.brightness ?: JSONObject.NULL)
@@ -143,7 +149,8 @@ class Backup(private val context: Context, private val db: GarasiDb, private val
     private fun JSONObject.optDoubleOrNull(k: String): Double? = if (isNull(k) || !has(k)) null else optDouble(k)
 
     private fun parsePhoto(o: JSONObject) = Photo(
-        id = o.getLong("id"), itemId = o.getLong("itemId"), originalPath = o.getString("originalPath"),
+        id = o.getLong("id"), itemId = o.getLong("itemId"), uid = o.optString("uid").ifBlank { newUid() },
+        itemUid = o.optString("itemUid"), updatedAt = o.optLong("updatedAt"), originalPath = o.getString("originalPath"),
         path = o.getString("path"), position = o.optInt("position"), isCover = o.optBoolean("isCover"),
         isFlaw = o.optBoolean("isFlaw"), angle = o.optString("angle"), width = o.optInt("width"), height = o.optInt("height"),
         sharpness = o.optDoubleOrNull("sharpness"), brightness = o.optDoubleOrNull("brightness"),
@@ -155,10 +162,11 @@ class Backup(private val context: Context, private val db: GarasiDb, private val
 
     private fun listingJson(l: PlatformListing) = JSONObject()
         .put("itemId", l.itemId).put("platform", l.platform.name).put("url", l.url)
-        .put("postedAt", l.postedAt).put("removed", l.removed)
+        .put("postedAt", l.postedAt).put("removed", l.removed).put("itemUid", l.itemUid).put("updatedAt", l.updatedAt)
 
     private fun parseListing(o: JSONObject) = PlatformListing(
         itemId = o.getLong("itemId"), platform = Platform.valueOf(o.getString("platform")),
         url = o.optString("url"), postedAt = o.optLong("postedAt"), removed = o.optBoolean("removed"),
+        itemUid = o.optString("itemUid"), updatedAt = o.optLong("updatedAt"),
     )
 }

@@ -1,7 +1,5 @@
 package com.garasi.app.quality
 
-import androidx.annotation.StringRes
-import com.garasi.app.R
 import com.garasi.app.data.Category
 import com.garasi.app.data.Condition
 import com.garasi.app.data.Item
@@ -14,80 +12,80 @@ import com.garasi.app.text.Templates
 
 enum class Area(val cap: Int) { PHOTOS(40), TITLE(20), DESCRIPTION(30), PRICE(10) }
 
-/** What the one-tap button on a fix does. */
-enum class FixAction(@StringRes val label: Int) {
-    RETAKE_PHOTO(R.string.fix_retake),
-    ADD_PHOTOS(R.string.fix_add_photos),
-    MANAGE_PHOTOS(R.string.fix_manage_photos),
-    MAKE_COVER(R.string.fix_make_cover),
-    CROP_COVER(R.string.fix_crop_cover),
-    ADD_FLAW_PHOTO(R.string.fix_add_flaw_photo),
-    EDIT_TITLE(R.string.fix_edit_title),
-    BUILD_TITLE(R.string.fix_build_title),
-    EDIT_DESCRIPTION(R.string.fix_edit_description),
-    USE_TEMPLATE(R.string.fix_use_template),
-    EDIT_DETAILS(R.string.fix_edit_details),
-    OPEN_PRICE(R.string.fix_open_price),
+/** What the one-tap button on a fix does. Labels/messages are string-resource keys (strings*.xml). */
+enum class FixAction(val label: String) {
+    RETAKE_PHOTO("fix_retake"),
+    ADD_PHOTOS("fix_add_photos"),
+    MANAGE_PHOTOS("fix_manage_photos"),
+    MAKE_COVER("fix_make_cover"),
+    CROP_COVER("fix_crop_cover"),
+    ADD_FLAW_PHOTO("fix_add_flaw_photo"),
+    EDIT_TITLE("fix_edit_title"),
+    BUILD_TITLE("fix_build_title"),
+    EDIT_DESCRIPTION("fix_edit_description"),
+    USE_TEMPLATE("fix_use_template"),
+    EDIT_DETAILS("fix_edit_details"),
+    OPEN_PRICE("fix_open_price"),
 }
 
 /** Parts of a description buyers look for. */
-enum class InfoPiece(@StringRes val label: Int) {
-    BRAND_MODEL(R.string.info_brand_model), CONDITION(R.string.info_condition), FLAWS(R.string.info_flaws),
-    INCLUDED(R.string.info_included), USAGE(R.string.info_usage), REASON(R.string.info_reason),
-    LOCATION(R.string.info_location), NEGOTIATION(R.string.info_negotiation), SHIPPING(R.string.info_shipping),
+enum class InfoPiece(val label: String) {
+    BRAND_MODEL("info_brand_model"), CONDITION("info_condition"), FLAWS("info_flaws"),
+    INCLUDED("info_included"), USAGE("info_usage"), REASON("info_reason"),
+    LOCATION("info_location"), NEGOTIATION("info_negotiation"), SHIPPING("info_shipping"),
 }
 
-enum class IssueType(@StringRes val message: Int, val area: Area, val penalty: Int, val action: FixAction) {
-    NO_PHOTOS(R.string.q_no_photos, Area.PHOTOS, 40, FixAction.ADD_PHOTOS),
-    TOO_FEW_PHOTOS(R.string.q_too_few_photos, Area.PHOTOS, 12, FixAction.ADD_PHOTOS),
-    FEW_PHOTOS(R.string.q_few_photos, Area.PHOTOS, 4, FixAction.ADD_PHOTOS),
-    BLURRY(R.string.q_blurry, Area.PHOTOS, 12, FixAction.RETAKE_PHOTO),
-    SOFT(R.string.q_soft, Area.PHOTOS, 5, FixAction.RETAKE_PHOTO),
-    TOO_DARK(R.string.q_too_dark, Area.PHOTOS, 10, FixAction.RETAKE_PHOTO),
-    OVEREXPOSED(R.string.q_overexposed, Area.PHOTOS, 8, FixAction.RETAKE_PHOTO),
-    FLAT(R.string.q_flat, Area.PHOTOS, 4, FixAction.RETAKE_PHOTO),
-    ITEM_TOO_SMALL(R.string.q_item_small, Area.PHOTOS, 6, FixAction.RETAKE_PHOTO),
-    ITEM_TOO_TIGHT(R.string.q_item_tight, Area.PHOTOS, 3, FixAction.RETAKE_PHOTO),
-    OFF_CENTER(R.string.q_off_center, Area.PHOTOS, 3, FixAction.RETAKE_PHOTO),
-    BUSY_BACKGROUND(R.string.q_busy_background, Area.PHOTOS, 6, FixAction.RETAKE_PHOTO),
-    LOW_RES(R.string.q_low_res, Area.PHOTOS, 6, FixAction.RETAKE_PHOTO),
-    COVER_NOT_SQUARE(R.string.q_cover_not_square, Area.PHOTOS, 4, FixAction.CROP_COVER),
-    BETTER_COVER(R.string.q_better_cover, Area.PHOTOS, 5, FixAction.MAKE_COVER),
-    NO_FLAW_PHOTO(R.string.q_no_flaw_photo, Area.PHOTOS, 10, FixAction.ADD_FLAW_PHOTO),
-    MISSING_ANGLES(R.string.q_missing_angles, Area.PHOTOS, 4, FixAction.MANAGE_PHOTOS),
+enum class IssueType(val message: String, val area: Area, val penalty: Int, val action: FixAction) {
+    NO_PHOTOS("q_no_photos", Area.PHOTOS, 40, FixAction.ADD_PHOTOS),
+    TOO_FEW_PHOTOS("q_too_few_photos", Area.PHOTOS, 12, FixAction.ADD_PHOTOS),
+    FEW_PHOTOS("q_few_photos", Area.PHOTOS, 4, FixAction.ADD_PHOTOS),
+    BLURRY("q_blurry", Area.PHOTOS, 12, FixAction.RETAKE_PHOTO),
+    SOFT("q_soft", Area.PHOTOS, 5, FixAction.RETAKE_PHOTO),
+    TOO_DARK("q_too_dark", Area.PHOTOS, 10, FixAction.RETAKE_PHOTO),
+    OVEREXPOSED("q_overexposed", Area.PHOTOS, 8, FixAction.RETAKE_PHOTO),
+    FLAT("q_flat", Area.PHOTOS, 4, FixAction.RETAKE_PHOTO),
+    ITEM_TOO_SMALL("q_item_small", Area.PHOTOS, 6, FixAction.RETAKE_PHOTO),
+    ITEM_TOO_TIGHT("q_item_tight", Area.PHOTOS, 3, FixAction.RETAKE_PHOTO),
+    OFF_CENTER("q_off_center", Area.PHOTOS, 3, FixAction.RETAKE_PHOTO),
+    BUSY_BACKGROUND("q_busy_background", Area.PHOTOS, 6, FixAction.RETAKE_PHOTO),
+    LOW_RES("q_low_res", Area.PHOTOS, 6, FixAction.RETAKE_PHOTO),
+    COVER_NOT_SQUARE("q_cover_not_square", Area.PHOTOS, 4, FixAction.CROP_COVER),
+    BETTER_COVER("q_better_cover", Area.PHOTOS, 5, FixAction.MAKE_COVER),
+    NO_FLAW_PHOTO("q_no_flaw_photo", Area.PHOTOS, 10, FixAction.ADD_FLAW_PHOTO),
+    MISSING_ANGLES("q_missing_angles", Area.PHOTOS, 4, FixAction.MANAGE_PHOTOS),
 
-    NO_TITLE(R.string.q_no_title, Area.TITLE, 20, FixAction.BUILD_TITLE),
-    TITLE_SHORT(R.string.q_title_short, Area.TITLE, 5, FixAction.EDIT_TITLE),
-    TITLE_LONG(R.string.q_title_long, Area.TITLE, 6, FixAction.EDIT_TITLE),
-    TITLE_NO_BRAND_START(R.string.q_title_brand_start, Area.TITLE, 6, FixAction.BUILD_TITLE),
-    TITLE_NO_MODEL(R.string.q_title_no_model, Area.TITLE, 5, FixAction.BUILD_TITLE),
-    TITLE_NO_VARIANT(R.string.q_title_no_variant, Area.TITLE, 3, FixAction.EDIT_DETAILS),
-    TITLE_ALL_CAPS(R.string.q_title_caps, Area.TITLE, 6, FixAction.EDIT_TITLE),
-    TITLE_SHOUTING(R.string.q_title_shouting, Area.TITLE, 6, FixAction.EDIT_TITLE),
-    TITLE_REPEATED(R.string.q_title_repeated, Area.TITLE, 3, FixAction.EDIT_TITLE),
-    TITLE_SPAM(R.string.q_title_spam, Area.TITLE, 6, FixAction.EDIT_TITLE),
-    EN_ADD_ID_KEYWORDS(R.string.q_en_keywords, Area.TITLE, 2, FixAction.EDIT_TITLE),
+    NO_TITLE("q_no_title", Area.TITLE, 20, FixAction.BUILD_TITLE),
+    TITLE_SHORT("q_title_short", Area.TITLE, 5, FixAction.EDIT_TITLE),
+    TITLE_LONG("q_title_long", Area.TITLE, 6, FixAction.EDIT_TITLE),
+    TITLE_NO_BRAND_START("q_title_brand_start", Area.TITLE, 6, FixAction.BUILD_TITLE),
+    TITLE_NO_MODEL("q_title_no_model", Area.TITLE, 5, FixAction.BUILD_TITLE),
+    TITLE_NO_VARIANT("q_title_no_variant", Area.TITLE, 3, FixAction.EDIT_DETAILS),
+    TITLE_ALL_CAPS("q_title_caps", Area.TITLE, 6, FixAction.EDIT_TITLE),
+    TITLE_SHOUTING("q_title_shouting", Area.TITLE, 6, FixAction.EDIT_TITLE),
+    TITLE_REPEATED("q_title_repeated", Area.TITLE, 3, FixAction.EDIT_TITLE),
+    TITLE_SPAM("q_title_spam", Area.TITLE, 6, FixAction.EDIT_TITLE),
+    EN_ADD_ID_KEYWORDS("q_en_keywords", Area.TITLE, 2, FixAction.EDIT_TITLE),
 
-    NO_DESCRIPTION(R.string.q_no_description, Area.DESCRIPTION, 30, FixAction.USE_TEMPLATE),
-    DESC_BLANKS(R.string.q_desc_blanks, Area.DESCRIPTION, 8, FixAction.EDIT_DESCRIPTION),
-    DESC_SHORT(R.string.q_desc_short, Area.DESCRIPTION, 6, FixAction.EDIT_DESCRIPTION),
-    DESC_LONG(R.string.q_desc_long, Area.DESCRIPTION, 4, FixAction.EDIT_DESCRIPTION),
-    DESC_MISSING_INFO(R.string.q_desc_missing, Area.DESCRIPTION, 3, FixAction.EDIT_DESCRIPTION), // ×pieces
-    DESC_LONG_SENTENCES(R.string.q_desc_long_sentences, Area.DESCRIPTION, 3, FixAction.EDIT_DESCRIPTION),
-    DESC_WALL(R.string.q_desc_wall, Area.DESCRIPTION, 5, FixAction.EDIT_DESCRIPTION),
-    DESC_EMOJI(R.string.q_desc_emoji, Area.DESCRIPTION, 3, FixAction.EDIT_DESCRIPTION),
-    DESC_EXCLAIM(R.string.q_desc_exclaim, Area.DESCRIPTION, 3, FixAction.EDIT_DESCRIPTION),
-    DESC_CAPS(R.string.q_desc_caps, Area.DESCRIPTION, 4, FixAction.EDIT_DESCRIPTION),
-    TONE_ID_STIFF(R.string.q_tone_id, Area.DESCRIPTION, 5, FixAction.EDIT_DESCRIPTION),
-    TONE_EN_HYPE(R.string.q_tone_en, Area.DESCRIPTION, 5, FixAction.EDIT_DESCRIPTION),
-    MIXED_LANG(R.string.q_mixed_lang, Area.DESCRIPTION, 5, FixAction.EDIT_DESCRIPTION),
-    WRONG_LANG(R.string.q_wrong_lang, Area.DESCRIPTION, 5, FixAction.EDIT_DESCRIPTION),
-    CONTACT_INFO(R.string.q_contact_info, Area.DESCRIPTION, 10, FixAction.EDIT_DESCRIPTION),
+    NO_DESCRIPTION("q_no_description", Area.DESCRIPTION, 30, FixAction.USE_TEMPLATE),
+    DESC_BLANKS("q_desc_blanks", Area.DESCRIPTION, 8, FixAction.EDIT_DESCRIPTION),
+    DESC_SHORT("q_desc_short", Area.DESCRIPTION, 6, FixAction.EDIT_DESCRIPTION),
+    DESC_LONG("q_desc_long", Area.DESCRIPTION, 4, FixAction.EDIT_DESCRIPTION),
+    DESC_MISSING_INFO("q_desc_missing", Area.DESCRIPTION, 3, FixAction.EDIT_DESCRIPTION), // ×pieces
+    DESC_LONG_SENTENCES("q_desc_long_sentences", Area.DESCRIPTION, 3, FixAction.EDIT_DESCRIPTION),
+    DESC_WALL("q_desc_wall", Area.DESCRIPTION, 5, FixAction.EDIT_DESCRIPTION),
+    DESC_EMOJI("q_desc_emoji", Area.DESCRIPTION, 3, FixAction.EDIT_DESCRIPTION),
+    DESC_EXCLAIM("q_desc_exclaim", Area.DESCRIPTION, 3, FixAction.EDIT_DESCRIPTION),
+    DESC_CAPS("q_desc_caps", Area.DESCRIPTION, 4, FixAction.EDIT_DESCRIPTION),
+    TONE_ID_STIFF("q_tone_id", Area.DESCRIPTION, 5, FixAction.EDIT_DESCRIPTION),
+    TONE_EN_HYPE("q_tone_en", Area.DESCRIPTION, 5, FixAction.EDIT_DESCRIPTION),
+    MIXED_LANG("q_mixed_lang", Area.DESCRIPTION, 5, FixAction.EDIT_DESCRIPTION),
+    WRONG_LANG("q_wrong_lang", Area.DESCRIPTION, 5, FixAction.EDIT_DESCRIPTION),
+    CONTACT_INFO("q_contact_info", Area.DESCRIPTION, 10, FixAction.EDIT_DESCRIPTION),
 
-    NO_PRICE(R.string.q_no_price, Area.PRICE, 10, FixAction.OPEN_PRICE),
-    NO_COMPARE(R.string.q_no_compare, Area.PRICE, 3, FixAction.OPEN_PRICE),
-    PRICE_HIGH(R.string.q_price_high, Area.PRICE, 7, FixAction.OPEN_PRICE),
-    PRICE_LOW(R.string.q_price_low, Area.PRICE, 6, FixAction.OPEN_PRICE),
+    NO_PRICE("q_no_price", Area.PRICE, 10, FixAction.OPEN_PRICE),
+    NO_COMPARE("q_no_compare", Area.PRICE, 3, FixAction.OPEN_PRICE),
+    PRICE_HIGH("q_price_high", Area.PRICE, 7, FixAction.OPEN_PRICE),
+    PRICE_LOW("q_price_low", Area.PRICE, 6, FixAction.OPEN_PRICE),
 }
 
 data class Issue(
@@ -113,8 +111,8 @@ data class QualityReport(
     }
 }
 
-enum class Verdict(@StringRes val label: Int) {
-    READY(R.string.verdict_ready), GOOD(R.string.verdict_good), NEEDS_FIXING(R.string.verdict_fix)
+enum class Verdict(val label: String) {
+    READY("verdict_ready"), GOOD("verdict_good"), NEEDS_FIXING("verdict_fix")
 }
 
 object Thresholds {

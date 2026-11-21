@@ -61,6 +61,8 @@ import com.garasi.app.quality.Area
 import com.garasi.app.quality.FixAction
 import com.garasi.app.quality.Issue
 import com.garasi.app.ui.BigButton
+import com.garasi.app.ui.keyResource
+import com.garasi.app.ui.keyString
 import com.garasi.app.ui.CollectMessages
 import com.garasi.app.ui.Field
 import com.garasi.app.ui.ItemViewModel
@@ -106,7 +108,7 @@ fun QualityScreen(nav: NavController, vm: ItemViewModel) {
                     }
                     Column(Modifier.padding(start = 20.dp)) {
                         Text(stringResource(R.string.appeal_score), style = MaterialTheme.typography.labelLarge)
-                        Text(stringResource(r.verdict.label), style = MaterialTheme.typography.titleLarge,
+                        Text(keyResource(r.verdict.label), style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold, color = scoreColor(r.verdict))
                     }
                 }
@@ -147,7 +149,7 @@ fun QualityScreen(nav: NavController, vm: ItemViewModel) {
 private fun IssueCard(issue: Issue, primary: Boolean, onFix: () -> Unit) {
     val ctx = LocalContext.current
     val args: Array<Any> = if (issue.pieces.isNotEmpty())
-        arrayOf(issue.pieces.joinToString(", ") { ctx.getString(it.label) })
+        arrayOf(issue.pieces.joinToString(", ") { ctx.keyString(it.label) })
     else issue.args.toTypedArray()
     val tint = if (issue.penalty >= 8) ScoreRed else ScoreAmber
     Card(
@@ -162,9 +164,9 @@ private fun IssueCard(issue: Issue, primary: Boolean, onFix: () -> Unit) {
                 contentAlignment = Alignment.Center,
             ) { Icon(areaIcon(issue.type.area), null, tint = tint, modifier = Modifier.size(22.dp)) }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(stringResource(issue.type.message, *args), style = MaterialTheme.typography.bodyLarge)
+                Text(keyResource(issue.type.message, *args), style = MaterialTheme.typography.bodyLarge)
                 FilledTonalButton(onFix, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp)) {
-                    Text(stringResource(issue.type.action.label))
+                    Text(keyResource(issue.type.action.label))
                 }
             }
         }

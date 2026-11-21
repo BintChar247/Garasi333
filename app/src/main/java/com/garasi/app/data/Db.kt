@@ -13,6 +13,8 @@ import androidx.room.Transaction
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import androidx.room.Update
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.flow.Flow
 
 class Converters {
@@ -64,8 +66,15 @@ interface ItemDao {
 
     @Insert suspend fun insertPhoto(photo: Photo): Long
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun upsertPhoto(photo: Photo): Long
-    @Update suspend fun updatePhoto(photo: Photo)
-    @Update suspend fun updatePhotos(photos: List<Photo>)
+    @Update suspend fun updatePhotoRaw(photo: Photo)
+    @Update suspend fun updatePhotosRaw(photos: List<Photo>)
+
+    /** Updates and stamps updatedAt so the change syncs. */
+    suspend fun updatePhoto(photo: Photo) = updatePhotoRaw(photo.copy(updatedAt = System.currentTimeMillis()))
+    suspend fun updatePhotos(photos: List<Photo>) {
+        val now = System.currentTimeMillis()
+        updatePhotosRaw(photos.map { it.copy(updatedAt = now) })
+    }
     @Delete suspend fun deletePhoto(photo: Photo)
 
     @Query("SELECT * FROM listings WHERE itemId = :itemId")
@@ -78,7 +87,9 @@ interface ItemDao {
     suspend fun allListings(): List<PlatformListing>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsertListing(listing: PlatformListing)
+    suspend fun upsertListingRaw(listing: PlatformListing)
+
+    suspend fun upsertListing(listing: PlatformListing) = upsertListingRaw(listing.copy(updatedAt = System.currentTimeMillis()))
 
     @Delete suspend fun deleteListing(listing: PlatformListing)
 
@@ -87,13 +98,45 @@ interface ItemDao {
         clearItems()
         items.forEach { upsertItem(it) }
         photos.forEach { upsertPhoto(it) }
-        listings.forEach { upsertListing(it) }
+        listings.forEach { upsertListingRaw(it) }
     }
 
     @Query("DELETE FROM items") suspend fun clearItems()
+
+    // ---- sync
+    @Query("SELECT * FROM tombstones") suspend fun allTombstones(): List<Tombstone>
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun upsertTombstone(t: Tombstone)
+    @Query("SELECT * FROM items WHERE uid = :uid") suspend fun itemByUid(uid: String): Item?
+    @Query("SELECT * FROM photos WHERE uid = :uid") suspend fun photoByUid(uid: String): Photo?
+    @Query("DELETE FROM items WHERE uid = :uid") suspend fun deleteItemByUid(uid: String)
+    @Query("DELETE FROM photos WHERE uid = :uid") suspend fun deletePhotoByUid(uid: String)
+    @Query("DELETE FROM listings WHERE itemId = :itemId AND platform = :platform") suspend fun deleteListing(itemId: Long, platform: Platform)
 }
 
-@Database(entities = [Item::class, Photo::class, PlatformListing::class], version = 1, exportSchema = false)
+/** v1 → v2: stable ids, timestamps and tombstones for PC sync. */
+val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE items ADD COLUMN uid TEXT NOT NULL DEFAULT ''")
+        db.execSQL("UPDATE items SET uid = lower(hex(randomblob(16)))")
+        db.execSQL("ALTER TABLE photos ADD COLUMN uid TEXT NOT NULL DEFAULT ''")
+        db.execSQL("ALTER TABLE photos ADD COLUMN itemUid TEXT NOT NULL DEFAULT ''")
+        db.execSQL("ALTER TABLE photos ADD COLUMN updatedAt INTEGER NOT NULL DEFAULT 0")
+        db.execSQL(
+            "UPDATE photos SET uid = lower(hex(randomblob(16))), " +
+                "itemUid = (SELECT uid FROM items WHERE items.id = photos.itemId), " +
+                "updatedAt = CAST(strftime('%s','now') AS INTEGER) * 1000"
+        )
+        db.execSQL("ALTER TABLE listings ADD COLUMN itemUid TEXT NOT NULL DEFAULT ''")
+        db.execSQL("ALTER TABLE listings ADD COLUMN updatedAt INTEGER NOT NULL DEFAULT 0")
+        db.execSQL(
+            "UPDATE listings SET itemUid = (SELECT uid FROM items WHERE items.id = listings.itemId), " +
+                "updatedAt = postedAt"
+        )
+        db.execSQL("CREATE TABLE IF NOT EXISTS `tombstones` (`uid` TEXT NOT NULL, `kind` TEXT NOT NULL, `deletedAt` INTEGER NOT NULL, PRIMARY KEY(`uid`))")
+    }
+}
+
+@Database(entities = [Item::class, Photo::class, PlatformListing::class, Tombstone::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class GarasiDb : RoomDatabase() {
     abstract fun dao(): ItemDao
@@ -102,6 +145,7 @@ abstract class GarasiDb : RoomDatabase() {
         @Volatile private var instance: GarasiDb? = null
         fun get(context: Context): GarasiDb = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(context.applicationContext, GarasiDb::class.java, "garasi.db")
+                .addMigrations(MIGRATION_1_2)
                 .build().also { instance = it }
         }
     }

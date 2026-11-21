@@ -39,6 +39,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.ui.graphics.Color
 import com.garasi.app.ui.StatusPill
+import com.garasi.app.sync.SyncManager
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.SyncProblem
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -146,6 +152,21 @@ fun HomeScreen(nav: NavController, vm: HomeViewModel = viewModel()) {
                     }
                 },
                 actions = {
+                    val app = LocalContext.current.applicationContext as GarasiApp
+                    val syncState by app.sync.state.collectAsStateWithLifecycle()
+                    val paired by app.sync.pairing.collectAsStateWithLifecycle()
+                    LaunchedEffect(paired != null) {
+                        if (paired != null && System.currentTimeMillis() - app.sync.lastSync > 120_000) app.sync.sync()
+                    }
+                    IconButton({
+                        if (paired == null) nav.navigate("sync") else scope.launch { app.sync.sync() }
+                    }) {
+                        when (syncState) {
+                            SyncManager.State.Syncing -> CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.5.dp)
+                            is SyncManager.State.Failed -> Icon(Icons.Filled.SyncProblem, stringResource(R.string.sync_title), tint = MaterialTheme.colorScheme.error)
+                            else -> Icon(if (paired == null) Icons.Filled.Computer else Icons.Filled.Sync, stringResource(R.string.sync_title))
+                        }
+                    }
                     IconButton({ nav.navigate(Routes.STATS) }) { Icon(Icons.Filled.BarChart, stringResource(R.string.stats_title)) }
                     IconButton({ nav.navigate(Routes.SETTINGS) }) { Icon(Icons.Filled.Settings, stringResource(R.string.settings_title)) }
                 },

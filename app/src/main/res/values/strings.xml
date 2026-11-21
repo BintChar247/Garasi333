@@ -323,6 +323,38 @@
     <string name="import_failed">That file doesn\'t look like a Garasi backup.</string>
     <string name="about_text">Garasi runs entirely on your phone. No accounts, no paid APIs, no scraping. AI help uses your own AI chat app.</string>
 
+    <!-- PC sync -->
+    <string name="sync_title">Sync with PC</string>
+    <string name="sync_how_title">Use Garasi on your Windows PC too</string>
+    <string name="sync_how_body">Install Garasi for Windows, open it and go to the Sync tab. Keep your phone and PC on the same Wi-Fi. Scan the QR code once — after that your items, text, prices and photos stay in sync both ways.</string>
+    <string name="sync_pair_title">Connect to your PC</string>
+    <string name="sync_scan">Scan QR code on PC</string>
+    <string name="sync_manual">Enter address &amp; code</string>
+    <string name="sync_manual_body">Type the address and pairing code shown in the Sync tab of Garasi on your PC.</string>
+    <string name="sync_pc_address">PC address (e.g. 192.168.1.5)</string>
+    <string name="sync_code">Pairing code</string>
+    <string name="sync_connect">Connect</string>
+    <string name="sync_paired_title">Connected PC</string>
+    <string name="sync_paired_with">PC: %1$s (port %2$d)</string>
+    <string name="sync_last">Last synced %1$s</string>
+    <string name="sync_never">Not synced yet</string>
+    <string name="sync_now">Sync now</string>
+    <string name="sync_rescan">Scan again</string>
+    <string name="sync_unpair">Disconnect</string>
+    <string name="sync_unpair_q">Disconnect from this PC?</string>
+    <string name="sync_unpair_body">Nothing is deleted on either device. You can scan the QR code again any time.</string>
+    <string name="sync_idle">Ready to sync.</string>
+    <string name="sync_syncing">Syncing…</string>
+    <string name="sync_done">Synced ✓ — %1$d items on both devices.</string>
+    <string name="sync_not_paired">Not connected to a PC yet.</string>
+    <string name="sync_unreachable">Can't reach your PC. Is Garasi open on it, and are both on the same Wi-Fi?</string>
+    <string name="sync_bad_code">The PC refused the pairing code. Scan the QR code again.</string>
+    <string name="sync_error">Sync failed. Try again in a moment.</string>
+    <string name="sync_scan_tip">Point the camera at the QR code in Garasi on your PC (Sync tab).</string>
+    <string name="sync_privacy">Sync runs directly between your phone and PC over your own Wi-Fi. No cloud, no account.</string>
+    <string name="sync_settings_tip">Edit and post from your Windows PC too. Phone and PC sync over your Wi-Fi.</string>
+    <string name="sync_open">Set up PC sync</string>
+
     <!-- Messages -->
     <string name="msg_max_photos">You can add up to %1$d photos per item.</string>
     <string name="msg_photo_import_failed">Couldn\'t add that photo. Try another one.</string>

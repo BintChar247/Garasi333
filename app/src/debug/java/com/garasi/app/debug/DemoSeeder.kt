@@ -95,7 +95,7 @@ class DemoSeeder : BroadcastReceiver() {
             )
         )
         listOf("front", "back", "detail", "in_use").forEachIndexed { i, a -> addPhoto(app, lampId, i, a, Kind.LAMP) }
-        dao.upsertListing(PlatformListing(lampId, Platform.TOKOPEDIA, "https://www.tokopedia.com/garasi/ikea-ranarp"))
+        dao.upsertListing(PlatformListing(lampId, Platform.TOKOPEDIA, "https://www.tokopedia.com/garasi/ikea-ranarp", itemUid = dao.getItem(lampId)?.uid.orEmpty()))
 
         // 3) Books — Sold
         val booksId = dao.insert(
@@ -126,11 +126,11 @@ class DemoSeeder : BroadcastReceiver() {
         val stored = app.photoStore.importFile(file)
         val dao = app.db.dao()
         val photo = Photo(
-            itemId = itemId, originalPath = stored.originalPath, path = stored.path, position = pos,
+            itemId = itemId, itemUid = dao.getItem(itemId)?.uid.orEmpty(), originalPath = stored.originalPath, path = stored.path, position = pos,
             isCover = pos == 0, isFlaw = flaw, angle = angle, width = stored.width, height = stored.height,
         )
         val id = dao.insertPhoto(photo)
-        runCatching { app.analyzer.analyze(photo.copy(id = id)) }.getOrNull()?.let { dao.updatePhoto(it) }
+        runCatching { app.analyzer.analyze(photo.copy(id = id)) }.getOrNull()?.let { dao.updatePhotoRaw(it) }
     }
 
     /** Synthetic "product photo": soft daylight backdrop, a simple object, and a little sensor noise. */

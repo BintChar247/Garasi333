@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "Garasi"
-include(":app")
+include(":core", ":app")

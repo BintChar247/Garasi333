@@ -4,7 +4,7 @@ import com.garasi.app.data.Category
 import com.garasi.app.data.Condition
 import com.garasi.app.data.Item
 import com.garasi.app.data.ListingLang
-import com.garasi.app.ml.ItemIdentifier
+import com.garasi.app.ml.IdentifyHeuristics
 import com.garasi.app.platform.Marketplace
 import com.garasi.app.data.Platform
 import com.garasi.app.text.AiAnswerParser
@@ -143,9 +143,9 @@ class TextLogicTest {
     }
 
     @Test fun identifierHeuristics() {
-        assertEquals("Sony", ItemIdentifier.guessBrand("SONY Wireless Noise Cancelling\nWH-1000XM4\nMade in Malaysia"))
-        assertEquals("WH-1000XM4", ItemIdentifier.guessModel("SONY Wireless\nWH-1000XM4 5V 1.5A\nWH-1000XM4"))
-        assertEquals(Category.ELECTRONICS, ItemIdentifier.guessCategory(mapOf("Mobile phone" to 0.9f, "Hand" to 0.7f)))
+        assertEquals("Sony", IdentifyHeuristics.guessBrand("SONY Wireless Noise Cancelling\nWH-1000XM4\nMade in Malaysia"))
+        assertEquals("WH-1000XM4", IdentifyHeuristics.guessModel("SONY Wireless\nWH-1000XM4 5V 1.5A\nWH-1000XM4"))
+        assertEquals(Category.ELECTRONICS, IdentifyHeuristics.guessCategory(mapOf("Mobile phone" to 0.9f, "Hand" to 0.7f)))
     }
 
     @Test fun marketplaceLinks() {

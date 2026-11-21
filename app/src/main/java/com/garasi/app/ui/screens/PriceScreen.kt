@@ -43,6 +43,7 @@ import androidx.navigation.NavController
 import com.garasi.app.R
 import com.garasi.app.data.Platform
 import com.garasi.app.platform.Marketplace
+import com.garasi.app.platform.MarketplaceLauncher
 import com.garasi.app.text.AiPrompt
 import com.garasi.app.text.Money
 import com.garasi.app.text.PriceCalculator
@@ -85,7 +86,7 @@ fun PriceScreen(nav: NavController, vm: ItemViewModel) {
                 Platform.entries.forEach { p ->
                     BigButton(stringResource(R.string.search_on, stringResource(platformLabel(p))), Icons.AutoMirrored.Filled.OpenInNew, {
                         if (query.isBlank()) vm.say(R.string.msg_enter_search)
-                        else if (!Marketplace.openUrl(ctx, Marketplace.searchUrl(p, query))) vm.say(R.string.msg_no_browser)
+                        else if (!MarketplaceLauncher.openUrl(ctx, Marketplace.searchUrl(p, query))) vm.say(R.string.msg_no_browser)
                     }, Modifier.fillMaxWidth(), outlined = true)
                 }
             }

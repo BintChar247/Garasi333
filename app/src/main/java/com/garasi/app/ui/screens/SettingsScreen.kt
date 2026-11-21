@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Computer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -88,6 +89,10 @@ fun SettingsScreen(nav: NavController) {
             Modifier.padding(pad).imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            SectionCard(stringResource(R.string.sync_title), icon = androidx.compose.material.icons.Icons.Filled.Computer) {
+                Text(stringResource(R.string.sync_settings_tip), style = MaterialTheme.typography.bodyMedium)
+                BigButton(stringResource(R.string.sync_open), null, { nav.navigate("sync") }, Modifier.fillMaxWidth(), outlined = true)
+            }
             SectionCard(stringResource(R.string.default_listing_language)) {
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                     ListingLang.entries.forEachIndexed { i, l ->

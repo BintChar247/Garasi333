@@ -57,6 +57,8 @@ fun GarasiNav() {
         composable(Routes.HOME) { HomeScreen(nav) }
         composable(Routes.STATS) { StatsScreen(nav) }
         composable(Routes.SETTINGS) { SettingsScreen(nav) }
+        composable("sync") { com.garasi.app.ui.screens.SyncScreen(nav) }
+        composable("scan") { com.garasi.app.ui.screens.ScanQrScreen(nav) }
         composable(Routes.ITEM, arguments = listOf(idArg)) { EditItemScreen(nav, itemVm(nav, it)) }
         composable(
             "item/{id}/camera?flaw={flaw}",

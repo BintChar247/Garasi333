@@ -49,7 +49,7 @@ jobs:
         run: |
           chmod +x gradlew
           set -o pipefail
-          ./gradlew --no-daemon --stacktrace testDebugUnitTest assembleRelease 2>&1 | tee build.log
+          ./gradlew --no-daemon --stacktrace :core:test assembleRelease 2>&1 | tee build.log
 
       - name: Report build errors
         if: failure()

@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - 'app/**'
+      - 'core/**'
       - 'scripts/preview.sh'
       - '.github/workflows/preview.yml'
 
