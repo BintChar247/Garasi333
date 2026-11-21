@@ -12,6 +12,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Title
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Sell
+import com.garasi.app.ui.theme.ScoreAmber
+import com.garasi.app.ui.theme.ScoreGreen
+import com.garasi.app.ui.theme.ScoreRed
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -77,18 +90,24 @@ fun QualityScreen(nav: NavController, vm: ItemViewModel) {
             Modifier.padding(pad).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Card(colors = CardDefaults.cardColors(containerColor = scoreColor(r.verdict).copy(alpha = 0.15f))) {
+            Card(
+                shape = MaterialTheme.shapes.large,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            ) {
                 Row(Modifier.fillMaxWidth().padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
                     Box(contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(
                             progress = { r.score / 100f }, modifier = Modifier.size(84.dp),
-                            color = scoreColor(r.verdict), strokeWidth = 8.dp,
+                            color = scoreColor(r.verdict), strokeWidth = 9.dp,
+                            trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                         )
                         Text("${r.score}", fontSize = 28.sp, fontWeight = FontWeight.Bold)
                     }
                     Column(Modifier.padding(start = 20.dp)) {
                         Text(stringResource(R.string.appeal_score), style = MaterialTheme.typography.labelLarge)
-                        Text(stringResource(r.verdict.label), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        Text(stringResource(r.verdict.label), style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold, color = scoreColor(r.verdict))
                     }
                 }
             }
@@ -98,7 +117,11 @@ fun QualityScreen(nav: NavController, vm: ItemViewModel) {
                     val v = r.areaScores[a] ?: 0
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(stringResource(areaLabel(a)), Modifier.weight(0.35f))
-                        LinearProgressIndicator(progress = { v / a.cap.toFloat() }, modifier = Modifier.weight(0.5f))
+                        LinearProgressIndicator(
+                            progress = { v / a.cap.toFloat() }, modifier = Modifier.weight(0.5f).height(8.dp).clip(CircleShape),
+                            color = when { v >= a.cap * 0.8 -> ScoreGreen; v >= a.cap * 0.5 -> ScoreAmber; else -> ScoreRed },
+                            trackColor = MaterialTheme.colorScheme.surfaceContainerHighest, drawStopIndicator = {},
+                        )
                         Text("$v/${a.cap}", Modifier.weight(0.15f).padding(start = 8.dp), style = MaterialTheme.typography.bodySmall)
                     }
                 }
@@ -126,17 +149,33 @@ private fun IssueCard(issue: Issue, primary: Boolean, onFix: () -> Unit) {
     val args: Array<Any> = if (issue.pieces.isNotEmpty())
         arrayOf(issue.pieces.joinToString(", ") { ctx.getString(it.label) })
     else issue.args.toTypedArray()
+    val tint = if (issue.penalty >= 8) ScoreRed else ScoreAmber
     Card(
         Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (primary) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (primary) 2.dp else 0.dp),
     ) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(stringResource(issue.type.message, *args), style = MaterialTheme.typography.bodyLarge)
-            BigButton(stringResource(issue.type.action.label), null, onFix, outlined = !primary)
+        Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            Box(
+                Modifier.size(40.dp).clip(CircleShape).background(tint.copy(alpha = 0.14f)),
+                contentAlignment = Alignment.Center,
+            ) { Icon(areaIcon(issue.type.area), null, tint = tint, modifier = Modifier.size(22.dp)) }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(stringResource(issue.type.message, *args), style = MaterialTheme.typography.bodyLarge)
+                FilledTonalButton(onFix, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp)) {
+                    Text(stringResource(issue.type.action.label))
+                }
+            }
         }
     }
+}
+
+private fun areaIcon(a: Area) = when (a) {
+    Area.PHOTOS -> Icons.Filled.PhotoCamera
+    Area.TITLE -> Icons.Filled.Title
+    Area.DESCRIPTION -> Icons.Filled.Description
+    Area.PRICE -> Icons.Filled.Sell
 }
 
 private fun areaLabel(a: Area) = when (a) {

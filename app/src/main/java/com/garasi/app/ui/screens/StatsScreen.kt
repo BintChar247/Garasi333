@@ -70,7 +70,7 @@ fun StatsScreen(nav: NavController, vm: HomeViewModel = viewModel()) {
             StatCard(stringResource(R.string.stat_earned), Money.format(s.earned))
             StatCard(stringResource(R.string.stat_avg_days), s.avgDays?.let { stringResource(R.string.days_value, it) } ?: "—")
             StatCard(stringResource(R.string.stat_active), s.active.toString())
-            if (s.byPlatform.isNotEmpty()) Card(Modifier.fillMaxWidth()) {
+            if (s.byPlatform.isNotEmpty()) Card(Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.large, colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest), elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 1.dp)) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(stringResource(R.string.stat_by_platform), style = MaterialTheme.typography.titleMedium)
                     s.byPlatform.forEach { (p, n) ->
@@ -87,10 +87,10 @@ fun StatsScreen(nav: NavController, vm: HomeViewModel = viewModel()) {
 
 @Composable
 private fun StatCard(label: String, value: String) {
-    Card(Modifier.fillMaxWidth()) {
+    Card(Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.large, colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest), elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 1.dp)) {
         Column(Modifier.padding(16.dp)) {
             Text(label, style = MaterialTheme.typography.labelLarge)
-            Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         }
     }
 }

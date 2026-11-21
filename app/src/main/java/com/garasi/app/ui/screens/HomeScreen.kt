@@ -25,6 +25,20 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.ui.graphics.Color
+import com.garasi.app.ui.StatusPill
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -124,7 +138,13 @@ fun HomeScreen(nav: NavController, vm: HomeViewModel = viewModel()) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold) },
+                title = {
+                    Column {
+                        Text(stringResource(R.string.app_name), fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+                        Text(stringResource(R.string.tagline), style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                },
                 actions = {
                     IconButton({ nav.navigate(Routes.STATS) }) { Icon(Icons.Filled.BarChart, stringResource(R.string.stats_title)) }
                     IconButton({ nav.navigate(Routes.SETTINGS) }) { Icon(Icons.Filled.Settings, stringResource(R.string.settings_title)) }
@@ -132,19 +152,30 @@ fun HomeScreen(nav: NavController, vm: HomeViewModel = viewModel()) {
             )
         },
         floatingActionButton = {
-            LargeFloatingActionButton(onClick = {
-                scope.launch { val id = vm.newItem(); nav.navigate(Routes.item(id)) }
-            }) { Icon(Icons.Filled.Add, stringResource(R.string.add_item), Modifier.padding(4.dp)) }
+            ExtendedFloatingActionButton(
+                onClick = { scope.launch { val id = vm.newItem(); nav.navigate(Routes.item(id)) } },
+                icon = { Icon(Icons.Filled.Add, null) },
+                text = { Text(stringResource(R.string.add_item), fontWeight = FontWeight.Bold) },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            )
         },
     ) { pad ->
         Column(Modifier.padding(pad).fillMaxSize()) {
+            if (rows.isNotEmpty()) { SummaryStrip(rows); Spacer(Modifier.height(12.dp)) }
             Row(Modifier.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(
+                TextField(
                     value = query, onValueChange = { query = it },
                     modifier = Modifier.weight(1f),
                     leadingIcon = { Icon(Icons.Filled.Search, null) },
                     placeholder = { Text(stringResource(R.string.search_hint)) },
                     singleLine = true,
+                    shape = CircleShape,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent,
+                    ),
                 )
                 Box {
                     IconButton({ sortMenu = true }) { Icon(Icons.Filled.Sort, stringResource(R.string.sort)) }
@@ -163,12 +194,13 @@ fun HomeScreen(nav: NavController, vm: HomeViewModel = viewModel()) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 item {
-                    FilterChip(filter == null, { filter = null }, label = { Text(stringResource(R.string.filter_all, rows.size)) })
+                    FilterChip(filter == null, { filter = null }, label = { Text(stringResource(R.string.filter_all, rows.size)) },
+                        shape = CircleShape, colors = chipColors())
                 }
                 items(ItemStatus.entries) { s ->
                     val n = rows.count { it.item.status == s }
                     FilterChip(filter == s, { filter = if (filter == s) null else s },
-                        label = { Text("${stringResource(statusLabel(s))} ($n)") })
+                        label = { Text("${stringResource(statusLabel(s))} ($n)") }, shape = CircleShape, colors = chipColors())
                 }
             }
             if (shown.isEmpty()) {
@@ -185,7 +217,7 @@ fun HomeScreen(nav: NavController, vm: HomeViewModel = viewModel()) {
                 }
             } else {
                 LazyVerticalGrid(
-                    columns = GridCells.Adaptive(160.dp),
+                    columns = GridCells.Adaptive(158.dp),
                     contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 120.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -199,7 +231,13 @@ fun HomeScreen(nav: NavController, vm: HomeViewModel = viewModel()) {
 
 @Composable
 private fun ItemCard(row: HomeRow, onClick: () -> Unit) {
-    Card(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
+    ElevatedCard(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
+    ) {
         Box {
             if (row.cover != null) {
                 AsyncImage(
@@ -208,39 +246,64 @@ private fun ItemCard(row: HomeRow, onClick: () -> Unit) {
                     modifier = Modifier.fillMaxWidth().aspectRatio(1f),
                 )
             } else {
-                Box(Modifier.fillMaxWidth().aspectRatio(1f), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Filled.Inventory2, null, tint = MaterialTheme.colorScheme.outline)
+                Box(
+                    Modifier.fillMaxWidth().aspectRatio(1f).background(MaterialTheme.colorScheme.secondaryContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Filled.AddAPhoto, null, Modifier.size(36.dp), tint = MaterialTheme.colorScheme.primary)
+                        Text(stringResource(R.string.no_photos_yet), style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer)
+                    }
                 }
             }
-            Surface(
-                color = statusColor(row.item.status), shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.padding(8.dp).clip(RoundedCornerShape(8.dp)),
-            ) {
-                Text(
-                    stringResource(statusLabel(row.item.status)),
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                )
-            }
+            StatusPill(row.item.status, Modifier.padding(8.dp))
         }
-        Column(Modifier.padding(10.dp)) {
+        Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
             Text(
                 row.item.displayName.ifBlank { stringResource(R.string.untitled_item) },
                 maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium,
+                minLines = 2,
             )
+            Spacer(Modifier.height(4.dp))
             val price = if (row.item.status == ItemStatus.SOLD && row.item.soldPrice > 0) row.item.soldPrice else row.item.askPrice
             Text(
                 if (price > 0) Money.format(price) else stringResource(R.string.no_price),
-                fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium,
+                color = if (price > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
 }
 
 @Composable
-fun statusColor(s: ItemStatus) = when (s) {
-    ItemStatus.DRAFT -> MaterialTheme.colorScheme.surfaceVariant
-    ItemStatus.READY -> MaterialTheme.colorScheme.tertiaryContainer
-    ItemStatus.POSTED -> MaterialTheme.colorScheme.primaryContainer
-    ItemStatus.SOLD -> MaterialTheme.colorScheme.secondaryContainer
+private fun SummaryStrip(rows: List<HomeRow>) {
+    val forSale = rows.count { it.item.status != ItemStatus.SOLD }
+    val sold = rows.filter { it.item.status == ItemStatus.SOLD }
+    Card(
+        Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+    ) {
+        Row(Modifier.padding(vertical = 14.dp)) {
+            SummaryCell(forSale.toString(), stringResource(R.string.summary_for_sale), Modifier.weight(1f))
+            SummaryCell(sold.size.toString(), stringResource(R.string.summary_sold), Modifier.weight(1f))
+            SummaryCell(Money.short(sold.sumOf { it.item.soldPrice }), stringResource(R.string.summary_earned), Modifier.weight(1.3f))
+        }
+    }
 }
+
+@Composable
+private fun SummaryCell(value: String, label: String, modifier: Modifier) {
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(value, style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onPrimary)
+        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f))
+    }
+}
+
+@Composable
+fun chipColors() = FilterChipDefaults.filterChipColors(
+    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+    selectedContainerColor = MaterialTheme.colorScheme.primary,
+    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+)

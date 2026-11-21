@@ -123,7 +123,7 @@ private fun PhotoRow(
     isBest: Boolean, onDelete: () -> Unit,
 ) {
     var angleMenu by remember { mutableStateOf(false) }
-    Card(Modifier.fillMaxWidth()) {
+    Card(Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.large, colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest), elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 1.dp)) {
         Row(Modifier.padding(10.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Box {
                 AsyncImage(File(p.path), null, contentScale = ContentScale.Crop,

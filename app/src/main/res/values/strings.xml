@@ -82,6 +82,11 @@
     <string name="filter_all">All (%1$d)</string>
     <string name="home_empty">Nothing here yet. Tap + and snap a photo of something you don\'t use anymore.</string>
     <string name="home_no_match">No items match. Try another search or filter.</string>
+    <string name="tagline">Your garage-sale helper</string>
+    <string name="summary_for_sale">For sale</string>
+    <string name="summary_sold">Sold</string>
+    <string name="summary_earned">Earned</string>
+    <string name="no_photos_yet">Add photos</string>
     <string name="untitled_item">Untitled item</string>
     <string name="no_price">No price yet</string>
 

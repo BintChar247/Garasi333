@@ -33,6 +33,18 @@ import com.garasi.app.data.ItemStatus
 import com.garasi.app.data.ListingLang
 import com.garasi.app.data.Platform
 import kotlinx.coroutines.flow.Flow
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import com.garasi.app.ui.theme.StatusDraft
+import com.garasi.app.ui.theme.StatusPosted
+import com.garasi.app.ui.theme.StatusReady
+import com.garasi.app.ui.theme.StatusSold
 
 @StringRes fun statusLabel(s: ItemStatus) = when (s) {
     ItemStatus.DRAFT -> R.string.status_draft
@@ -97,24 +109,59 @@ fun CollectMessages(messages: Flow<UiMessage>, host: SnackbarHostState) {
 }
 
 @Composable
-fun SectionCard(title: String, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+fun SectionCard(
+    title: String, modifier: Modifier = Modifier, icon: ImageVector? = null,
+    content: @Composable ColumnScope.() -> Unit,
+) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (icon != null) {
+                    Box(
+                        Modifier.size(32.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center,
+                    ) { Icon(icon, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary) }
+                    Spacer(Modifier.width(10.dp))
+                }
+                Text(title, style = MaterialTheme.typography.titleMedium)
+            }
             content()
         }
     }
 }
 
+/** Primary = filled orange; outlined = soft tonal button. */
 @Composable
 fun BigButton(text: String, icon: ImageVector?, onClick: () -> Unit, modifier: Modifier = Modifier, outlined: Boolean = false, enabled: Boolean = true) {
     val content: @Composable () -> Unit = {
-        if (icon != null) { Icon(icon, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp)) }
-        Text(text)
+        if (icon != null) { Icon(icon, null, Modifier.size(19.dp)); Spacer(Modifier.width(8.dp)) }
+        Text(text, maxLines = 1)
     }
-    if (outlined) OutlinedButton(onClick, modifier.heightIn(min = 52.dp), enabled = enabled) { content() }
-    else Button(onClick, modifier.heightIn(min = 52.dp), enabled = enabled) { content() }
+    if (outlined) FilledTonalButton(onClick, modifier.heightIn(min = 50.dp), enabled = enabled) { content() }
+    else Button(onClick, modifier.heightIn(min = 50.dp), enabled = enabled) { content() }
+}
+
+/** Small rounded status pill with a coloured dot. */
+@Composable
+fun StatusPill(status: ItemStatus, modifier: Modifier = Modifier) {
+    val color = statusColor(status)
+    Surface(modifier = modifier, shape = CircleShape, color = MaterialTheme.colorScheme.surfaceContainerLowest.copy(alpha = 0.94f), shadowElevation = 1.dp) {
+        Row(Modifier.padding(horizontal = 10.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(8.dp).clip(CircleShape).background(color))
+            Spacer(Modifier.width(6.dp))
+            Text(stringResource(statusLabel(status)), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+        }
+    }
+}
+
+fun statusColor(s: ItemStatus) = when (s) {
+    ItemStatus.DRAFT -> StatusDraft
+    ItemStatus.READY -> StatusReady
+    ItemStatus.POSTED -> StatusPosted
+    ItemStatus.SOLD -> StatusSold
 }

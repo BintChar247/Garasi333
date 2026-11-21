@@ -20,6 +20,8 @@ import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.RocketLaunch
+import androidx.compose.material.icons.filled.Storefront
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -142,10 +144,10 @@ fun PostScreen(nav: NavController, vm: ItemViewModel) {
             report?.let { r ->
                 if (r.score < 60) Text(stringResource(R.string.post_low_score, r.score), color = MaterialTheme.colorScheme.error)
             }
-            SectionCard(stringResource(R.string.choose_platform)) {
+            SectionCard(stringResource(R.string.choose_platform), icon = Icons.Filled.Storefront) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Platform.entries.forEach { p ->
-                        FilterChip(platform == p, { platform = p }, label = { Text(stringResource(platformLabel(p))) })
+                        FilterChip(platform == p, { platform = p }, label = { Text(stringResource(platformLabel(p))) }, shape = androidx.compose.foundation.shape.CircleShape, colors = chipColors())
                     }
                 }
                 Text(stringResource(R.string.listing_in, stringResource(langLabel(lang))), style = MaterialTheme.typography.bodyMedium)
@@ -154,7 +156,7 @@ fun PostScreen(nav: NavController, vm: ItemViewModel) {
                     Switch(both, { both = it })
                 }
             }
-            SectionCard(stringResource(R.string.preview)) {
+            SectionCard(stringResource(R.string.preview), icon = Icons.Filled.Visibility) {
                 val spec = Marketplace.spec(platform)
                 Text(stringResource(R.string.label_title), style = MaterialTheme.typography.labelLarge)
                 Text(title.ifBlank { "—" }, fontWeight = FontWeight.SemiBold)
@@ -189,7 +191,7 @@ fun PostScreen(nav: NavController, vm: ItemViewModel) {
             BigButton(stringResource(R.string.post_go, stringResource(platformLabel(platform))), Icons.Filled.RocketLaunch, { go() }, Modifier.fillMaxWidth())
             Text(stringResource(R.string.post_go_tip), style = MaterialTheme.typography.bodySmall)
 
-            SectionCard(stringResource(R.string.where_posted)) {
+            SectionCard(stringResource(R.string.where_posted), icon = Icons.Filled.CheckCircle) {
                 Platform.entries.forEach { p ->
                     val l = listings.firstOrNull { it.platform == p }
                     Row(verticalAlignment = Alignment.CenterVertically) {

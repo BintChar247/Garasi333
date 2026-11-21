@@ -12,6 +12,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -77,7 +79,7 @@ fun PriceScreen(nav: NavController, vm: ItemViewModel) {
             Modifier.padding(pad).imePadding().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            SectionCard(stringResource(R.string.price_step1)) {
+            SectionCard(stringResource(R.string.price_step1), icon = Icons.Filled.Search) {
                 Text(stringResource(R.string.price_step1_tip), style = MaterialTheme.typography.bodyMedium)
                 OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth(), label = { Text(stringResource(R.string.search_words)) }, singleLine = true)
                 Platform.entries.forEach { p ->
@@ -87,7 +89,7 @@ fun PriceScreen(nav: NavController, vm: ItemViewModel) {
                     }, Modifier.fillMaxWidth(), outlined = true)
                 }
             }
-            SectionCard(stringResource(R.string.price_ai_title)) {
+            SectionCard(stringResource(R.string.price_ai_title), icon = Icons.Filled.AutoAwesome) {
                 Text(stringResource(R.string.price_ai_tip), style = MaterialTheme.typography.bodyMedium)
                 BigButton(stringResource(R.string.price_ai_ask), Icons.Filled.AutoAwesome, {
                     AiActions.ask(ctx, vm, item, AiPrompt.Mode.PRICE, photos.map { it.path })
@@ -100,7 +102,7 @@ fun PriceScreen(nav: NavController, vm: ItemViewModel) {
                     SelectionContainer { Text(r, style = MaterialTheme.typography.bodySmall) }
                 }
             }
-            SectionCard(stringResource(R.string.price_step2)) {
+            SectionCard(stringResource(R.string.price_step2), icon = Icons.Filled.Sell) {
                 Text(stringResource(R.string.price_step2_tip_ai), style = MaterialTheme.typography.bodyMedium)
                 PriceField(item.compareLow, R.string.price_low) { v -> vm.update { it.copy(compareLow = v) } }
                 PriceField(item.compareMedian, R.string.price_median) { v -> vm.update { it.copy(compareMedian = v) } }

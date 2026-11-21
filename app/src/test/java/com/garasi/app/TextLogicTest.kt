@@ -38,6 +38,9 @@ class TextLogicTest {
         assertEquals(850_000L, Money.parse("850k"))
         assertEquals(2_000_000L, Money.parse("2 juta"))
         assertNull(Money.parse("nego"))
+        assertEquals("Rp 2,15 jt", Money.short(2_150_000))
+        assertEquals("Rp 1 jt", Money.short(1_000_000))
+        assertEquals("Rp 850 rb", Money.short(850_000))
         assertEquals(1_255_000L, Money.roundNice(1_253_400.0))
     }
 

@@ -40,6 +40,13 @@ import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.DocumentScanner
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Sell
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.BottomAppBar
@@ -162,27 +169,33 @@ fun EditItemScreen(nav: NavController, vm: ItemViewModel) {
             )
         },
         bottomBar = {
-            BottomAppBar {
-                val r = report
-                OutlinedButton(
-                    onClick = { nav.navigate(Routes.quality(vm.itemId)) },
-                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp).height(52.dp),
+            Surface(color = MaterialTheme.colorScheme.surfaceContainerLowest, shadowElevation = 12.dp) {
+                Row(
+                    Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Icon(Icons.Filled.Insights, null, Modifier.size(20.dp))
-                    Spacer(Modifier.size(6.dp))
-                    Text(if (r != null) stringResource(R.string.appeal_score_short, r.score) else stringResource(R.string.quality_check))
-                    if (r != null) {
-                        Spacer(Modifier.size(6.dp))
-                        Box(Modifier.size(10.dp).clip(RoundedCornerShape(5.dp))) {
-                            Surface(color = scoreColor(r.verdict), modifier = Modifier.fillMaxSize()) {}
+                    val r = report
+                    Surface(
+                        onClick = { nav.navigate(Routes.quality(vm.itemId)) },
+                        shape = RoundedCornerShape(50),
+                        color = (r?.let { scoreColor(it.verdict) } ?: MaterialTheme.colorScheme.outline).copy(alpha = 0.14f),
+                        modifier = Modifier.height(52.dp),
+                    ) {
+                        Row(Modifier.padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Box(contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(
+                                    progress = { (r?.score ?: 0) / 100f }, modifier = Modifier.size(34.dp), strokeWidth = 4.dp,
+                                    color = r?.let { scoreColor(it.verdict) } ?: MaterialTheme.colorScheme.outline,
+                                    trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                                )
+                                Text("${r?.score ?: "–"}", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                            }
+                            Spacer(Modifier.size(8.dp))
+                            Text(stringResource(R.string.quality_check), style = MaterialTheme.typography.labelLarge)
                         }
                     }
+                    BigButton(stringResource(R.string.post), Icons.AutoMirrored.Filled.Send, { nav.navigate(Routes.post(vm.itemId)) }, Modifier.weight(1f))
                 }
-                BigButton(
-                    stringResource(R.string.post), Icons.Filled.Send,
-                    { nav.navigate(Routes.post(vm.itemId)) },
-                    Modifier.weight(1f).padding(horizontal = 8.dp),
-                )
             }
         },
     ) { pad ->
@@ -229,27 +242,27 @@ private fun PhotosSection(nav: NavController, vm: ItemViewModel) {
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(ItemViewModel.MAX_PHOTOS)) { uris ->
         if (uris.isNotEmpty()) vm.addPhotos(uris)
     }
-    SectionCard(stringResource(R.string.photos_count, photos.size, ItemViewModel.MAX_PHOTOS)) {
-        if (photos.isEmpty()) {
-            Text(stringResource(R.string.photos_empty_tip), style = MaterialTheme.typography.bodyMedium)
-        } else {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                itemsIndexed(photos, key = { _, p -> p.id }) { i, p ->
-                    Box(Modifier.size(96.dp).clip(RoundedCornerShape(12.dp)).clickable { nav.navigate(Routes.photos(vm.itemId)) }) {
-                        AsyncImage(File(p.path), null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-                        Row(Modifier.padding(4.dp), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                            if (i == 0) Badge(stringResource(R.string.cover))
-                            if (p.isFlaw) Badge(stringResource(R.string.flaw))
-                        }
+    SectionCard(stringResource(R.string.photos_count, photos.size, ItemViewModel.MAX_PHOTOS), icon = Icons.Filled.PhotoCamera) {
+        if (photos.isEmpty()) Text(stringResource(R.string.photos_empty_tip), style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            itemsIndexed(photos, key = { _, p -> p.id }) { i, p ->
+                Box(Modifier.size(104.dp).clip(RoundedCornerShape(16.dp)).clickable { nav.navigate(Routes.photos(vm.itemId)) }) {
+                    AsyncImage(File(p.path), null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                    Row(Modifier.padding(6.dp), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                        if (i == 0) Badge(stringResource(R.string.cover))
+                        if (p.isFlaw) Badge(stringResource(R.string.flaw))
                     }
                 }
             }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            BigButton(stringResource(R.string.camera), Icons.Filled.CameraAlt, { nav.navigate(Routes.camera(vm.itemId)) }, Modifier.weight(1f))
-            BigButton(stringResource(R.string.gallery), Icons.Filled.PhotoLibrary, {
-                picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-            }, Modifier.weight(1f), outlined = true)
+            if (photos.size < ItemViewModel.MAX_PHOTOS) {
+                item { AddTile(stringResource(R.string.camera), Icons.Filled.CameraAlt) { nav.navigate(Routes.camera(vm.itemId)) } }
+                item {
+                    AddTile(stringResource(R.string.gallery), Icons.Filled.PhotoLibrary) {
+                        picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    }
+                }
+            }
         }
         if (photos.isNotEmpty()) TextButton({ nav.navigate(Routes.photos(vm.itemId)) }) {
             Icon(Icons.Filled.Edit, null, Modifier.size(18.dp)); Spacer(Modifier.size(6.dp))
@@ -259,10 +272,24 @@ private fun PhotosSection(nav: NavController, vm: ItemViewModel) {
 }
 
 @Composable
+private fun AddTile(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick, modifier = Modifier.size(104.dp), shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.primaryContainer,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Icon(icon, null, Modifier.size(30.dp), tint = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.height(6.dp))
+            Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
+        }
+    }
+}
+
+@Composable
 fun Badge(text: String) {
-    Surface(color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(6.dp)) {
+    Surface(color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(50)) {
         Text(text, color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.labelSmall,
-            modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp))
+            fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp))
     }
 }
 
@@ -270,8 +297,9 @@ fun Badge(text: String) {
 
 @Composable
 private fun IdentifySection(vm: ItemViewModel, result: IdentifyResult?, hasPhotos: Boolean, busy: Boolean) {
-    SectionCard(stringResource(R.string.identify_title)) {
-        Text(stringResource(R.string.identify_tip), style = MaterialTheme.typography.bodyMedium)
+    SectionCard(stringResource(R.string.identify_title), icon = Icons.Filled.DocumentScanner) {
+        Text(stringResource(R.string.identify_tip), style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
         BigButton(stringResource(R.string.identify_button), Icons.Filled.Search, { vm.identify() },
             Modifier.fillMaxWidth(), outlined = true, enabled = hasPhotos && !busy)
         if (result != null && !result.isEmpty) {
@@ -306,7 +334,7 @@ private fun DetailsSection(vm: ItemViewModel, item: Item) {
     LaunchedEffect(focus) {
         if (focus == Field.DETAILS) { runCatching { brandFocus.requestFocus() }; vm.focus.value = null }
     }
-    SectionCard(stringResource(R.string.details_title)) {
+    SectionCard(stringResource(R.string.details_title), icon = Icons.Filled.Info) {
         var catOpen by remember { mutableStateOf(false) }
         ExposedDropdownMenuBox(catOpen, { catOpen = it }) {
             OutlinedTextField(
@@ -390,7 +418,7 @@ private fun TextSection(vm: ItemViewModel, item: Item, photoPaths: List<String>)
     fun askAi(mode: AiPrompt.Mode) = AiActions.ask(ctx, vm, item, mode, photoPaths)
     fun pasteAi() { AiActions.paste(ctx, vm, item) }
 
-    SectionCard(stringResource(R.string.listing_text_title)) {
+    SectionCard(stringResource(R.string.listing_text_title), icon = Icons.Filled.Description) {
         Text(stringResource(R.string.listing_language), style = MaterialTheme.typography.labelLarge)
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
             ListingLang.entries.forEachIndexed { i, l ->
@@ -459,7 +487,7 @@ private fun PriceSection(nav: NavController, vm: ItemViewModel, item: Item) {
     LaunchedEffect(focus) {
         if (focus == Field.PRICE) { runCatching { priceFocus.requestFocus() }; vm.focus.value = null }
     }
-    SectionCard(stringResource(R.string.price_title)) {
+    SectionCard(stringResource(R.string.price_title), icon = Icons.Filled.Sell) {
         PriceField(item.askPrice, R.string.asking_price, Modifier.focusRequester(priceFocus)) { v -> vm.update { it.copy(askPrice = v) } }
         if (item.aiUsedMin > 0) Text(
             stringResource(R.string.ai_used_range, Money.format(item.aiUsedMin), Money.format(item.aiUsedMax)),

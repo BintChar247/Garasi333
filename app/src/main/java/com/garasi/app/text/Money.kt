@@ -12,6 +12,14 @@ object Money {
     /** 1250000 -> "Rp 1.250.000" */
     fun format(amount: Long): String = "Rp " + fmt.format(amount)
 
+    /** Compact: 2150000 -> "Rp 2,15 jt", 350000 -> "Rp 350 rb", 0 -> "Rp 0" */
+    fun short(amount: Long): String = when {
+        amount >= 1_000_000 -> "Rp " + String.format(Locale.ROOT, "%.2f", amount / 1_000_000.0)
+            .trimEnd('0').trimEnd('.').replace('.', ',') + " jt"
+        amount >= 1_000 -> "Rp " + (amount / 1_000) + " rb"
+        else -> "Rp $amount"
+    }
+
     /** Digits-only grouping for text fields: 1250000 -> "1.250.000" */
     fun group(amount: Long): String = if (amount <= 0) "" else fmt.format(amount)
 
