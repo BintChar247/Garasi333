@@ -225,7 +225,13 @@
     <string name="price_step1_tip">Opens search results in your browser or the app, cheapest first where possible. Look at items in similar condition.</string>
     <string name="search_words">Search words</string>
     <string name="search_on">Search on %1$s</string>
-    <string name="price_step2">2. Enter what you saw</string>
+    <string name="price_ai_title">2. Or let your AI research it</string>
+    <string name="price_ai_tip">Your AI app searches current second-hand listings in Indonesia and sends back low / typical / high prices with sources. Works best in Gemini or ChatGPT with web search on. Copy its whole answer, come back and paste.</string>
+    <string name="price_ai_ask">Ask AI for market prices</string>
+    <string name="price_ai_paste">Paste AI price answer</string>
+    <string name="price_ai_sources">Where the AI found these prices — tap the links to double-check:</string>
+    <string name="price_step2">3. Prices you saw</string>
+    <string name="price_step2_tip_ai">Lowest, typical (middle) and highest prices — typed in by you or filled by the AI. Adjust anything that looks off.</string>
     <string name="price_step2_tip">Lowest, typical (middle) and highest prices. The typical one matters most.</string>
     <string name="price_low">Lowest</string>
     <string name="price_median">Typical (median)</string>
@@ -327,6 +333,7 @@
     <string name="msg_clipboard_empty">Nothing in the clipboard. Copy the AI\'s whole answer first.</string>
     <string name="msg_clipboard_is_prompt">Your clipboard still has the prompt. Copy the AI\'s answer, then come back.</string>
     <string name="msg_ai_parse_failed">Couldn\'t find TITLE: / DESCRIPTION: in what you copied. Copy the AI\'s full answer and try again.</string>
+    <string name="msg_ai_prices_applied">Market prices filled in. Check the sources — AI can be wrong.</string>
     <string name="msg_ai_applied">AI answer filled in. Have a read and tweak anything that isn\'t quite you.</string>
     <string name="msg_enter_search">Type something to search for.</string>
     <string name="msg_no_browser">No browser found to open the search.</string>

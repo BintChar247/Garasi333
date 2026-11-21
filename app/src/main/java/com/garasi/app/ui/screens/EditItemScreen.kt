@@ -102,6 +102,7 @@ import com.garasi.app.quality.Verdict
 import com.garasi.app.text.AiPrompt
 import com.garasi.app.text.Money
 import com.garasi.app.text.Templates
+import com.garasi.app.ui.AiActions
 import com.garasi.app.ui.BigButton
 import com.garasi.app.ui.CollectMessages
 import com.garasi.app.ui.Field
@@ -386,32 +387,8 @@ private fun TextSection(vm: ItemViewModel, item: Item, photoPaths: List<String>)
         }
     }
 
-    fun askAi(mode: AiPrompt.Mode) {
-        if (mode != AiPrompt.Mode.WRITE && item.title(lang).isBlank() && item.description(lang).isBlank()) {
-            vm.say(R.string.msg_nothing_to_send); return
-        }
-        val prompt = AiPrompt.build(mode, item, lang, if (mode == AiPrompt.Mode.WRITE) photoPaths.take(6).size else 0)
-        vm.lastPrompt = prompt
-        vm.aiTargetLang = if (mode == AiPrompt.Mode.TRANSLATE) lang.other else lang
-        Clipboard.copy(ctx, "Garasi prompt", prompt)
-        val ok = ShareHelper.shareToAi(ctx, prompt, if (mode == AiPrompt.Mode.WRITE) photoPaths.take(6) else emptyList(),
-            ctx.getString(R.string.ai_chooser_title))
-        if (!ok) vm.say(R.string.msg_no_ai_app)
-        else if (!ShareHelper.hasAnyAiApp(ctx)) vm.say(R.string.msg_no_known_ai_app)
-        else vm.say(R.string.msg_prompt_copied)
-    }
-
-    fun pasteAi() {
-        val clip = Clipboard.read(ctx)
-        if (clip == null) { vm.say(R.string.msg_clipboard_empty); return }
-        if (clip == vm.lastPrompt || "Reply ONLY" in clip || "Balas HANYA" in clip) { vm.say(R.string.msg_clipboard_is_prompt); return }
-        val target = vm.aiTargetLang ?: lang
-        val answer = vm.applyAiAnswer(clip, target)
-        if (answer == null) { vm.say(R.string.msg_ai_parse_failed); return }
-        if (target != lang) vm.update { it.copy(listingLang = target) }
-        vm.aiTargetLang = null
-        vm.say(R.string.msg_ai_applied)
-    }
+    fun askAi(mode: AiPrompt.Mode) = AiActions.ask(ctx, vm, item, mode, photoPaths)
+    fun pasteAi() { AiActions.paste(ctx, vm, item) }
 
     SectionCard(stringResource(R.string.listing_text_title)) {
         Text(stringResource(R.string.listing_language), style = MaterialTheme.typography.labelLarge)

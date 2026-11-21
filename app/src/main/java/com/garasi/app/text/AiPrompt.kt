@@ -5,7 +5,7 @@ import com.garasi.app.data.ListingLang
 
 /** Builds prompts for the free "Ask AI" hand-off to the user's own AI chat app. */
 object AiPrompt {
-    enum class Mode { WRITE, TRANSLATE, IMPROVE }
+    enum class Mode { WRITE, TRANSLATE, IMPROVE, PRICE }
 
     private fun details(i: Item, lang: ListingLang): String {
         val rows = listOf(
@@ -31,6 +31,14 @@ DESCRIPTION: ...
 CONDITION: ...
 USED_PRICE: Rp min – Rp max
 NEW_PRICE: Rp ..."""
+
+    private const val FORMAT_PRICE = """PRICE_LOW: Rp ...
+PRICE_MEDIAN: Rp ...
+PRICE_HIGH: Rp ...
+NEW_PRICE: Rp ...
+SOURCES:
+- <listing title> — Rp ... — <platform> — <link>
+NOTE: ..."""
 
     private const val FORMAT_TEXT_ONLY = """TITLE: ...
 DESCRIPTION: ..."""
@@ -71,6 +79,7 @@ Example tone:
         Mode.WRITE -> write(item, lang, photoCount)
         Mode.TRANSLATE -> translate(item, lang)
         Mode.IMPROVE -> improve(item, lang)
+        Mode.PRICE -> price(item, lang, photoCount)
     }
 
     private fun write(i: Item, lang: ListingLang, photoCount: Int): String = if (lang == ListingLang.ID) """
@@ -160,4 +169,40 @@ ${i.description(lang)}
 Reply ONLY in exactly this format (no other text, no markdown):
 $FORMAT_TEXT_ONLY
 """.trim()
+
+    /** Market price research: asks the AI app to look up current second-hand listings in Indonesia. */
+    private fun price(i: Item, lang: ListingLang, photoCount: Int): String {
+        val name = listOf(i.brand, i.model, i.variant).filter { it.isNotBlank() }.joinToString(" ")
+        return if (lang == ListingLang.ID) """
+Tolong riset harga pasar BEKAS untuk barang ini di Indonesia SAAT INI.
+${if (photoCount > 0) "Aku lampirkan $photoCount foto supaya kamu bisa lihat barang dan kondisinya." else ""}
+
+Barang: ${name.ifBlank { "(lihat foto)" }}
+${details(i, lang)}
+
+Caranya:
+1. Cari di web listing yang masih aktif atau baru terjual di Tokopedia, Shopee, OLX, Facebook Marketplace, Carousell, dll. Cari pakai kata kunci bahasa Indonesia juga (misalnya "$name bekas", "$name second").
+2. Pakai hanya barang yang sama (model & varian sama) dan kondisi mirip (${ListingText.condition(i.condition, lang)}). Abaikan barang baru/segel, aksesoris, sparepart, listing rusak/mati, dan harga yang jelas nggak masuk akal.
+3. Ambil 5–10 listing yang paling relevan. Dari situ tentukan harga terendah wajar, median, dan tertinggi wajar.
+4. Kalau kamu tidak bisa browsing web, tulis itu di NOTE dan beri perkiraan terbaikmu.
+
+Balas HANYA dengan format persis ini (angka dalam Rupiah, tanpa teks lain, tanpa markdown):
+$FORMAT_PRICE
+""".trim() else """
+Please research the current SECOND-HAND market price for this item in Indonesia.
+${if (photoCount > 0) "I've attached $photoCount photos so you can see the item and its condition." else ""}
+
+Item: ${name.ifBlank { "(see photos)" }}
+${details(i, lang)}
+
+How:
+1. Search the web for live or recently sold listings on Tokopedia, Shopee, OLX, Facebook Marketplace, Carousell, etc. Also search with Indonesian keywords (e.g. "$name bekas", "$name second").
+2. Only use the same item (same model and variant) in similar condition (${ListingText.condition(i.condition, lang)}). Ignore new/sealed items, accessories, spare parts, broken units and obviously unrealistic prices.
+3. Take the 5–10 most relevant listings and work out a realistic low, median and high price.
+4. If you can't browse the web, say so in NOTE and give your best estimate.
+
+Reply ONLY in exactly this format (amounts in Rupiah, no other text, no markdown):
+$FORMAT_PRICE
+""".trim()
+    }
 }

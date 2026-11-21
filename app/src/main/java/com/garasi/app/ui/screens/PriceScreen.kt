@@ -10,6 +10,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,12 +36,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.garasi.app.R
 import com.garasi.app.data.Platform
 import com.garasi.app.platform.Marketplace
+import com.garasi.app.text.AiPrompt
 import com.garasi.app.text.Money
 import com.garasi.app.text.PriceCalculator
+import com.garasi.app.ui.AiActions
 import com.garasi.app.ui.BigButton
 import com.garasi.app.ui.CollectMessages
 import com.garasi.app.ui.ItemViewModel
@@ -51,6 +57,7 @@ import com.garasi.app.ui.platformLabel
 fun PriceScreen(nav: NavController, vm: ItemViewModel) {
     val ctx = LocalContext.current
     val item = vm.current ?: return
+    val photos by vm.photos.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     CollectMessages(vm.messages, snackbar)
     var query by rememberSaveable { mutableStateOf(Marketplace.searchQuery(item)) }
@@ -80,8 +87,21 @@ fun PriceScreen(nav: NavController, vm: ItemViewModel) {
                     }, Modifier.fillMaxWidth(), outlined = true)
                 }
             }
+            SectionCard(stringResource(R.string.price_ai_title)) {
+                Text(stringResource(R.string.price_ai_tip), style = MaterialTheme.typography.bodyMedium)
+                BigButton(stringResource(R.string.price_ai_ask), Icons.Filled.AutoAwesome, {
+                    AiActions.ask(ctx, vm, item, AiPrompt.Mode.PRICE, photos.map { it.path })
+                }, Modifier.fillMaxWidth())
+                BigButton(stringResource(R.string.price_ai_paste), Icons.Filled.ContentPaste, {
+                    AiActions.paste(ctx, vm, item)
+                }, Modifier.fillMaxWidth(), outlined = true)
+                vm.priceResearch?.let { r ->
+                    Text(stringResource(R.string.price_ai_sources), style = MaterialTheme.typography.labelLarge)
+                    SelectionContainer { Text(r, style = MaterialTheme.typography.bodySmall) }
+                }
+            }
             SectionCard(stringResource(R.string.price_step2)) {
-                Text(stringResource(R.string.price_step2_tip), style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.price_step2_tip_ai), style = MaterialTheme.typography.bodyMedium)
                 PriceField(item.compareLow, R.string.price_low) { v -> vm.update { it.copy(compareLow = v) } }
                 PriceField(item.compareMedian, R.string.price_median) { v -> vm.update { it.copy(compareMedian = v) } }
                 PriceField(item.compareHigh, R.string.price_high) { v -> vm.update { it.copy(compareHigh = v) } }

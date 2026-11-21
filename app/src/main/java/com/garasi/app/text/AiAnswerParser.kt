@@ -10,15 +10,21 @@ data class AiAnswer(
     val usedMin: Long? = null,
     val usedMax: Long? = null,
     val newPrice: Long? = null,
+    val priceLow: Long? = null,
+    val priceMedian: Long? = null,
+    val priceHigh: Long? = null,
+    val sources: String? = null,
+    val note: String? = null,
 ) {
     val isEmpty get() = title == null && description == null && condition == null &&
-        usedMin == null && usedMax == null && newPrice == null
+        usedMin == null && usedMax == null && newPrice == null && !hasMarketPrices
+    val hasMarketPrices get() = priceLow != null || priceMedian != null || priceHigh != null
 }
 
 /** Parses the strict TITLE/DESCRIPTION/CONDITION/USED_PRICE/NEW_PRICE reply format, tolerantly. */
 object AiAnswerParser {
     private val keyLine = Regex(
-        """^\s*[*_#>\s]*(TITLE|DESCRIPTION|CONDITION|USED[_ ]PRICE|NEW[_ ]PRICE)[*_\s]*:[*_]*\s?(.*)$""",
+        """^\s*[*_#>\s]*(TITLE|DESCRIPTION|CONDITION|USED[_ ]PRICE|NEW[_ ]PRICE|PRICE[_ ]LOW|PRICE[_ ]MEDIAN|PRICE[_ ]HIGH|SOURCES|NOTE)[*_\s]*:[*_]*\s?(.*)$""",
     )
 
     private fun canonical(k: String): String = when (k.uppercase().replace(' ', '_')) {
@@ -26,6 +32,11 @@ object AiAnswerParser {
         "DESCRIPTION" -> "DESCRIPTION"
         "CONDITION" -> "CONDITION"
         "USED_PRICE" -> "USED_PRICE"
+        "PRICE_LOW" -> "PRICE_LOW"
+        "PRICE_MEDIAN" -> "PRICE_MEDIAN"
+        "PRICE_HIGH" -> "PRICE_HIGH"
+        "SOURCES" -> "SOURCES"
+        "NOTE" -> "NOTE"
         else -> "NEW_PRICE"
     }
 
@@ -62,6 +73,11 @@ object AiAnswerParser {
             usedMin = usedMin,
             usedMax = usedMax,
             newPrice = f("NEW_PRICE")?.let { Money.parse(it) },
+            priceLow = f("PRICE_LOW")?.let { Money.parse(it) },
+            priceMedian = f("PRICE_MEDIAN")?.let { Money.parse(it) },
+            priceHigh = f("PRICE_HIGH")?.let { Money.parse(it) },
+            sources = f("SOURCES"),
+            note = f("NOTE"),
         )
     }
 

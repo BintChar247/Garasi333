@@ -97,6 +97,33 @@ class TextLogicTest {
         assertTrue(AiAnswerParser.parse("hello there").isEmpty)
     }
 
+    @Test fun parsesAiPriceResearch() {
+        val raw = """
+            PRICE_LOW: Rp 1.750.000
+            PRICE_MEDIAN: Rp 2.100.000
+            PRICE_HIGH: Rp 2.600.000
+            NEW_PRICE: Rp 4.999.000
+            SOURCES:
+            - Sony WH-1000XM4 Black second — Rp 2.050.000 — Tokopedia — https://www.tokopedia.com/x/y
+            - WH1000XM4 bekas mulus — Rp 2.200.000 — Shopee — https://shopee.co.id/z
+            NOTE: Based on 7 listings checked today.
+        """.trimIndent()
+        val a = AiAnswerParser.parse(raw)
+        assertTrue(a.hasMarketPrices)
+        assertEquals(1_750_000L, a.priceLow)
+        assertEquals(2_100_000L, a.priceMedian)
+        assertEquals(2_600_000L, a.priceHigh)
+        assertEquals(4_999_000L, a.newPrice)
+        assertTrue(a.sources!!.contains("tokopedia.com"))
+        assertTrue(a.sources!!.lines().size == 2)
+        assertEquals("Based on 7 listings checked today.", a.note)
+        assertNull(a.title)
+        val p = AiPrompt.build(AiPrompt.Mode.PRICE, sony, ListingLang.ID, 2)
+        assertTrue(p.contains("PRICE_MEDIAN: Rp ..."))
+        assertTrue(p.contains("Balas HANYA"))
+        assertTrue(AiPrompt.build(AiPrompt.Mode.PRICE, sony, ListingLang.EN, 0).contains("Reply ONLY"))
+    }
+
     @Test fun promptContainsFormatAndExample() {
         val p = AiPrompt.build(AiPrompt.Mode.WRITE, sony, ListingLang.ID, 3)
         assertTrue(p.contains("USED_PRICE: Rp min – Rp max"))

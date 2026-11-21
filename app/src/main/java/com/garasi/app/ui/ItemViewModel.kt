@@ -79,6 +79,9 @@ class ItemViewModel(app: Application, val itemId: Long) : AndroidViewModel(app) 
     var lastPrompt: String? = null
     var aiTargetLang: ListingLang? = null
 
+    /** Sources / note from the last AI price research, shown on the price screen. */
+    var priceResearch by mutableStateOf<String?>(null)
+
     init {
         viewModelScope.launch {
             setItem(dao.getItem(itemId))
@@ -267,12 +270,16 @@ class ItemViewModel(app: Application, val itemId: Long) : AndroidViewModel(app) 
     fun applyAiAnswer(raw: String, lang: ListingLang): AiAnswer? {
         val a = AiAnswerParser.parse(raw)
         if (a.isEmpty) return null
+        if (a.hasMarketPrices) priceResearch = listOfNotNull(a.sources, a.note).joinToString("\n\n").ifBlank { null }
         update { i ->
             var n = i.withText(lang, title = a.title, desc = a.description)
             a.condition?.let { n = n.copy(condition = it) }
             a.usedMin?.let { n = n.copy(aiUsedMin = it) }
             a.usedMax?.let { n = n.copy(aiUsedMax = it) }
             a.newPrice?.let { n = n.copy(newPrice = it) }
+            a.priceLow?.let { n = n.copy(compareLow = it) }
+            a.priceMedian?.let { n = n.copy(compareMedian = it) }
+            a.priceHigh?.let { n = n.copy(compareHigh = it) }
             if (n.askPrice == 0L && a.usedMin != null && a.usedMax != null) n = n.copy(askPrice = a.usedMax)
             n
         }
