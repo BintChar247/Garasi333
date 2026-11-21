@@ -85,3 +85,20 @@ shot home-dark
 tap "Sony WH-1000XM4" && { swipe_up; swipe_up; swipe_up; shot edit-dark; tap "^Quality Check$" && shot quality-dark; }
 adb shell cmd uimode night no
 ls -la "$OUT"
+
+# ---------------------------------------------------------------------------------------------
+# End-to-end phone <-> PC sync test (only when the desktop app is running on the host: SYNC_TOKEN set)
+if [ -n "${SYNC_TOKEN:-}" ]; then
+  echo "== sync test =="
+  adb logcat -c
+  adb shell am broadcast -n $PKG/.debug.DebugPair --es host 10.0.2.2 --es token "$SYNC_TOKEN"
+  for i in $(seq 1 30); do
+    line=$(adb logcat -d -s GarasiSync:I | grep "result=" | tail -1)
+    [ -n "$line" ] && break; sleep 2
+  done
+  echo "SYNC RESULT: $line" | tee "$OUT/sync-result.txt"
+  open_app
+  shot after-sync-home
+  tap "^Sync with PC$|^Sync$" && { shot sync-screen; back; }
+  tap "Canon EOS M10" && { shot synced-from-pc; back; }
+fi

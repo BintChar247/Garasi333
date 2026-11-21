@@ -3,5 +3,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
         <receiver android:name=".debug.DemoSeeder" android:exported="true" />
+        <receiver android:name=".debug.DebugPair" android:exported="true" />
     </application>
 </manifest>

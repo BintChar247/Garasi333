@@ -26,8 +26,21 @@ jobs:
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Build debug APK
-        run: chmod +x gradlew && ./gradlew --no-daemon assembleDebug
+      - name: Build debug APK + Windows app (runs on Linux for the test)
+        run: chmod +x gradlew && ./gradlew --no-daemon assembleDebug :desktop:createDistributable
+
+      - name: Start desktop app on a virtual display
+        run: |
+          sudo apt-get install -y -qq xvfb xdotool imagemagick >/dev/null
+          python3 scripts/desktop-seed.py TESTPAIR42
+          Xvfb :99 -screen 0 1440x900x24 &
+          sleep 2
+          export DISPLAY=:99
+          nohup env SKIKO_RENDER_API=SOFTWARE desktop/build/compose/binaries/main/app/Garasi/bin/Garasi > desktop.log 2>&1 &
+          for i in $(seq 1 60); do curl -s localhost:8737/api/ping | grep -q garasi && break; sleep 2; done
+          curl -s localhost:8737/api/ping; echo
+          mkdir -p shots
+          import -display :99 -window root shots/pc-01-before-sync.png || true
 
       - name: Enable KVM
         run: |
@@ -44,7 +57,21 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated
-          script: adb install -r app/build/outputs/apk/debug/app-debug.apk && bash scripts/preview.sh
+          script: adb install -r app/build/outputs/apk/debug/app-debug.apk && SYNC_TOKEN=TESTPAIR42 bash scripts/preview.sh
+
+      - name: Desktop screenshots after sync
+        if: always()
+        run: |
+          export DISPLAY=:99
+          sleep 2
+          import -window root shots/pc-02-after-sync.png || true
+          # open the synced phone item in the editor (first row of the list)
+          xdotool mousemove 240 330 click 1 || true; sleep 3
+          import -window root shots/pc-03-editor.png || true
+          xdotool mousemove 40 250 click 1 || true; sleep 3
+          import -window root shots/pc-04-sync-page.png || true
+          echo "--- desktop log"; tail -n 40 desktop.log || true
+          ls ~/.garasi/photos | head; python3 -c "import json,os;d=json.load(open(os.path.expanduser('~/.garasi/data.json')));print('PC items:',[i.get('titleId') or i.get('brand') for i in d['snapshot']['items']])"
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -57,7 +84,7 @@ jobs:
         if: github.event_name != 'pull_request'
         run: |
           [ -d shots ] && [ "$(ls shots | wc -l)" -gt 0 ] || exit 0
-          mkdir pub && cp shots/*.png pub/
+          mkdir pub && cp shots/*.png pub/ && cp shots/*.txt pub/ 2>/dev/null || true
           cd pub
           {
             echo "# Garasi — app preview"

@@ -46,6 +46,11 @@ object Store {
     var data by mutableStateOf(load())
         private set
 
+    init {
+        // Persist right away so the pairing code stays the same across restarts.
+        if (!file.exists()) runCatching { saveNow() }
+    }
+
     val snapshot get() = data.snapshot
     val settings get() = data.settings
 
