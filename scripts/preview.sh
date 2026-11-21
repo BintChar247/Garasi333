@@ -50,7 +50,7 @@ adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS || true
 adb shell appops set $PKG SYSTEM_ALERT_WINDOW allow || true
 
 open_app
-adb shell am broadcast -n $PKG/.debug.DemoSeeder
+adb shell am broadcast -n $PKG/.debug.DemoSeeder; adb logcat -d -b crash | tail -n 30
 sleep 25
 open_app
 shot home
@@ -102,3 +102,7 @@ if [ -n "${SYNC_TOKEN:-}" ]; then
   tap "^Sync with PC$|^Sync$" && { shot sync-screen; back; }
   tap "Canon EOS M10" && { shot synced-from-pc; back; }
 fi
+
+echo "--- crash log"; adb logcat -d -b crash | tail -n 60
+echo "--- garasi log"; adb logcat -d | grep -iE "garasi|AndroidRuntime" | tail -n 40
+true
