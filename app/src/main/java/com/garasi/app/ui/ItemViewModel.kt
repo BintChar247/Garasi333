@@ -283,7 +283,8 @@ class ItemViewModel(app: Application, val itemId: Long) : AndroidViewModel(app) 
             a.priceLow?.let { n = n.copy(compareLow = it) }
             a.priceMedian?.let { n = n.copy(compareMedian = it) }
             a.priceHigh?.let { n = n.copy(compareHigh = it) }
-            if (n.askPrice == 0L && a.usedMin != null && a.usedMax != null) n = n.copy(askPrice = a.usedMax)
+            val maxUsed = a.usedMax
+            if (n.askPrice == 0L && a.usedMin != null && maxUsed != null) n = n.copy(askPrice = maxUsed)
             n
         }
         return a

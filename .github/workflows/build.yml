@@ -1,4 +1,4 @@
-name: Garasi APK
+name: Garasi build (Android + Windows)
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: write   # to publish the APK as a GitHub Release
 
 jobs:
-  build:
+  android:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -79,18 +79,70 @@ jobs:
           name: garasi-apk
           path: dist/*.apk
 
-      # Publish to the "Garasi (latest)" release so the APK has a stable download link:
-      # https://github.com/<owner>/<repo>/releases/latest/download/garasi.apk
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build Windows app (installer + portable)
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon --stacktrace :desktop:packageMsi :desktop:createDistributable 2>&1 | tee build.log
+
+      - name: Report build errors
+        if: failure()
+        run: |
+          grep -nE '^e: |error:|FAILED|What went wrong|> Could not|Caused by' build.log | head -n 60 > errors.txt || true
+          msg=$(sed -e 's/%/%25/g' errors.txt | awk '{printf "%s%%0A", $0}')
+          echo "::error title=Windows build failed::${msg}"
+
+      - name: Collect
+        run: |
+          mkdir -p dist
+          cp desktop/build/compose/binaries/main/msi/*.msi dist/Garasi-Windows-Setup.msi
+          powershell -NoProfile -Command "Compress-Archive -Path desktop/build/compose/binaries/main/app/Garasi -DestinationPath dist/Garasi-Windows-Portable.zip"
+          ls -la dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: garasi-windows
+          path: dist/*
+
+  # Publish both apps to the "garasi-latest" release so they have stable download links:
+  # https://github.com/<owner>/<repo>/releases/latest/download/garasi.apk
+  # https://github.com/<owner>/<repo>/releases/latest/download/Garasi-Windows-Setup.msi
+  release:
+    if: github.event_name != 'pull_request'
+    needs: [android, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
       - name: Publish release
-        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
+          ls -R out
           gh release delete garasi-latest --cleanup-tag --yes || true
-          gh release create garasi-latest dist/garasi.apk \
+          gh release create garasi-latest out/garasi-apk/garasi.apk out/garasi-windows/* \
             --target "$GITHUB_SHA" \
             --title "Garasi (latest build)" \
-            --notes "Android APK built from ${GITHUB_SHA::7} on $(date -u +'%Y-%m-%d %H:%M UTC').
+            --notes "Built from ${GITHUB_SHA::7} on $(date -u +'%Y-%m-%d %H:%M UTC').
 
-          **Install:** open this page on your phone → tap **garasi.apk** → allow installs from your browser → Install.
-          Requires Android 8.0+. See README.md for details and the device test checklist."
+          **Android:** open this page on your phone → tap **garasi.apk** → Install (Android 8.0+).
+
+          **Windows:** download **Garasi-Windows-Setup.msi** and run it (Windows 10/11). If SmartScreen warns, click *More info → Run anyway*. No installer rights? Use **Garasi-Windows-Portable.zip**, unzip and run Garasi.exe.
+
+          Sync: in the Windows app open **Sync**, then on the phone go to Settings → Set up PC sync → Scan QR code (same Wi-Fi)."

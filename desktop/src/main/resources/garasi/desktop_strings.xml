@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Windows-only UI text. Shared text comes from the Android app's strings.xml. -->
+<resources>
+    <string name="d_window_title">Garasi — garage-sale helper</string>
+    <string name="d_nav_items">Items</string>
+    <string name="d_nav_sync">Sync</string>
+    <string name="d_select_item">Pick an item on the left, or add a new one.</string>
+    <string name="d_delete_item_body">Its photos and text will be removed from Garasi on this PC and, after the next sync, on your phone.</string>
+    <string name="d_photos_tip">Add photos from your PC, or take them with the phone app — they sync here automatically.</string>
+    <string name="d_add_photos">Add photos</string>
+    <string name="d_pick_photos">Choose photos</string>
+    <string name="d_photo_select_tip">Click a photo to reorder, crop, tag or delete it.</string>
+    <string name="d_move_left">Move left</string>
+    <string name="d_move_right">Move right</string>
+    <string name="d_crop_center">Square crop</string>
+    <string name="d_copy_other_lang">Copy other language</string>
+    <string name="d_other_language">Other language version</string>
+    <string name="d_ai_tip">Opens Claude, ChatGPT or Gemini in your browser with the prompt (it\'s also on your clipboard — paste it if the box is empty). Copy the AI\'s whole answer, then click \"Paste AI answer\".</string>
+    <string name="d_ai_open_in">Open in:</string>
+    <string name="d_prompt_opened">Prompt copied and %1$s opened. Paste it if the box is empty.</string>
+    <string name="d_prompt_copied_only">Prompt copied to the clipboard. Paste it into your AI chat.</string>
+    <string name="d_post_steps">Open the seller page, then use these buttons one by one — each copies the next thing to paste.</string>
+    <string name="d_copy_title">Copy title</string>
+    <string name="d_copy_description">Copy description</string>
+    <string name="d_save_photos">Save photos to folder</string>
+    <string name="d_copy_price">Copy price</string>
+    <string name="d_open_seller">Open %1$s seller page</string>
+    <string name="d_photos_saved">%1$d photos saved to %2$s</string>
+    <string name="d_sync_title">Sync with your phone</string>
+    <string name="d_sync_scan_title">Scan with the Garasi phone app</string>
+    <string name="d_sync_steps">1. Connect your phone to the same Wi-Fi as this PC.\n2. In the phone app: Settings → Set up PC sync → Scan QR code.\n3. Done. The phone syncs whenever you open it (or tap the sync button).</string>
+    <string name="d_sync_manual">No camera? Choose \"Enter address &amp; code\" on the phone and type:</string>
+    <string name="d_sync_address">Address: %1$s</string>
+    <string name="d_sync_code">Code: %1$s</string>
+    <string name="d_sync_status_title">Status</string>
+    <string name="d_sync_listening">Ready — waiting for your phone on port %1$d.</string>
+    <string name="d_sync_stopped">Sync is off.</string>
+    <string name="d_sync_error">Couldn\'t start sync: %1$s. Is another copy of Garasi already open?</string>
+    <string name="d_sync_last">Last sync: %1$s (from %2$s)</string>
+    <string name="d_sync_waiting">No sync yet.</string>
+    <string name="d_sync_firewall">First time: if Windows asks about network access, allow Garasi on private networks so your phone can reach it.</string>
+    <string name="d_sync_start">Start sync</string>
+    <string name="d_sync_new_code">New pairing code</string>
+    <string name="d_sync_new_code_tip">A new code disconnects phones paired with the old one — scan the QR code again on your phone.</string>
+    <string name="d_data_folder">Data folder</string>
+    <string name="d_data_folder_tip">Everything is stored on this PC in %1$s (data.json + photos). Copy that folder to back it up.</string>
+    <string name="d_open_folder">Open data folder</string>
+    <string name="d_about">Garasi for Windows runs entirely on your PC. No accounts, no paid APIs, no scraping. Phone sync stays on your own Wi-Fi.</string>
+</resources>
