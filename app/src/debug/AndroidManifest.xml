@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only: lets the preview script load demo items. Never shipped in release APKs. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <receiver android:name=".debug.DemoSeeder" android:exported="true" />
+    </application>
+</manifest>
