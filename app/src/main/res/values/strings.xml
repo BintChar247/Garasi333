@@ -347,7 +347,7 @@
     <string name="sync_syncing">Syncing…</string>
     <string name="sync_done">Synced ✓ — %1$d items on both devices.</string>
     <string name="sync_not_paired">Not connected to a PC yet.</string>
-    <string name="sync_unreachable">Can't reach your PC. Is Garasi open on it, and are both on the same Wi-Fi?</string>
+    <string name="sync_unreachable">Can\'t reach your PC. Is Garasi open on it, and are both on the same Wi-Fi?</string>
     <string name="sync_bad_code">The PC refused the pairing code. Scan the QR code again.</string>
     <string name="sync_error">Sync failed. Try again in a moment.</string>
     <string name="sync_scan_tip">Point the camera at the QR code in Garasi on your PC (Sync tab).</string>
