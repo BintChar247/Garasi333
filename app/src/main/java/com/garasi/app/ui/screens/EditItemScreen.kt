@@ -246,20 +246,20 @@ private fun PhotosSection(nav: NavController, vm: ItemViewModel) {
         if (photos.isEmpty()) Text(stringResource(R.string.photos_empty_tip), style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
         LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            if (photos.size < ItemViewModel.MAX_PHOTOS) {
+                item { AddTile(stringResource(R.string.camera), Icons.Filled.CameraAlt) { nav.navigate(Routes.camera(vm.itemId)) } }
+                item {
+                    AddTile(stringResource(R.string.gallery), Icons.Filled.PhotoLibrary) {
+                        picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    }
+                }
+            }
             itemsIndexed(photos, key = { _, p -> p.id }) { i, p ->
                 Box(Modifier.size(104.dp).clip(RoundedCornerShape(16.dp)).clickable { nav.navigate(Routes.photos(vm.itemId)) }) {
                     AsyncImage(File(p.path), null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
                     Row(Modifier.padding(6.dp), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                         if (i == 0) Badge(stringResource(R.string.cover))
                         if (p.isFlaw) Badge(stringResource(R.string.flaw))
-                    }
-                }
-            }
-            if (photos.size < ItemViewModel.MAX_PHOTOS) {
-                item { AddTile(stringResource(R.string.camera), Icons.Filled.CameraAlt) { nav.navigate(Routes.camera(vm.itemId)) } }
-                item {
-                    AddTile(stringResource(R.string.gallery), Icons.Filled.PhotoLibrary) {
-                        picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                     }
                 }
             }

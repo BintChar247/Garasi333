@@ -61,7 +61,7 @@ tap "Sony WH-1000XM4" && {
   swipe_up; swipe_up; shot edit-text
   swipe_up; shot edit-ai
   swipe_up; swipe_up; shot edit-price
-  tap "^Score" && { shot quality; swipe_up; shot quality-more; back; }
+  tap "^Quality Check$" && { shot quality; swipe_up; shot quality-more; back; }
   tap "^Post$" && { shot post; swipe_up; shot post-where; back; }
   swipe_down; swipe_down; swipe_down; swipe_down; swipe_down; swipe_down
   tap "Reorder, crop and tag photos" && { shot photos; back; }
@@ -82,6 +82,6 @@ adb shell am force-stop $PKG
 adb shell cmd uimode night yes
 open_app
 shot home-dark
-tap "Sony WH-1000XM4" && { swipe_up; swipe_up; swipe_up; shot edit-dark; tap "^Score" && shot quality-dark; }
+tap "Sony WH-1000XM4" && { swipe_up; swipe_up; swipe_up; shot edit-dark; tap "^Quality Check$" && shot quality-dark; }
 adb shell cmd uimode night no
 ls -la "$OUT"
