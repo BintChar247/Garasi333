@@ -1,4 +1,4 @@
-# Garasi — garage-sale listing helper (Android)
+# Garasi — garage-sale listing helper (Android + Windows)
 
 Photograph stuff you don't use anymore. Garasi helps you identify it, write an honest,
 human-sounding title and description (Bahasa Indonesia or English), pick a fair second-hand
@@ -48,22 +48,43 @@ Garasi333/
 
 ---
 
-## Download the APK (no computer setup)
+## Download
 
-**Direct link (always the newest build):**
-https://github.com/BintChar247/Garasi333/releases/latest/download/garasi.apk
+| | Link |
+|---|---|
+| **Android** (8.0+) | https://github.com/BintChar247/Garasi333/releases/latest/download/garasi.apk |
+| **Windows** installer (10/11) | https://github.com/BintChar247/Garasi333/releases/latest/download/Garasi-Windows-Setup.msi |
+| **Windows** portable (no install) | https://github.com/BintChar247/Garasi333/releases/latest/download/Garasi-Windows-Portable.zip |
 
-Or open the [Garasi release page](https://github.com/BintChar247/Garasi333/releases/latest)
-on your phone and tap **garasi.apk**.
+Every push to `main` runs **GitHub Actions → "Garasi build"** (`.github/workflows/build.yml`): unit tests,
+the Android APK, the Windows MSI + portable zip, then it replaces the `garasi-latest` release.
 
-Every push to `main` runs **GitHub Actions → "Garasi APK"**
-(`.github/workflows/build.yml`): unit tests, `assembleRelease`, then it replaces the
-`garasi-latest` release with the new APK. You can also start it by hand: Actions → Garasi APK →
-*Run workflow*.
+Windows SmartScreen may warn because the installer isn't code-signed: *More info → Run anyway*.
 
-Without signing secrets the CI APK is signed with that run's throwaway debug key. It installs
-fine, but the next CI build has a different key, so Android will refuse to *update* over it
-(uninstall first, after exporting a backup). Add your own key as secrets (below) to fix that.
+---
+
+## Garasi for Windows + phone ↔ PC sync
+
+The Windows app (`desktop/`, Kotlin Compose Desktop) shares the same core code as the phone app
+(`core/`: templates, AI prompts + answer parser, price maths, Appeal Score, marketplace links, UI text),
+so both behave the same. A big screen is handy for typing descriptions, AI help in the browser
+(Claude / ChatGPT / Gemini), price research, and posting on the marketplace seller websites.
+
+**Sync is local and free — no cloud, no account:**
+1. Phone and PC on the same Wi-Fi. Open Garasi on the PC → **Sync** tab (shows a QR code).
+2. Phone: **Settings → Set up PC sync → Scan QR code** (or type the address + code shown).
+3. From then on the phone syncs every time you open it (and when you tap the sync icon on the home
+   screen): items, both language versions, prices, status, listings, sold info and **photos** go both ways.
+   The newest edit wins; deletions sync too.
+4. The PC must have Garasi open to sync. First time, allow Windows' network prompt on *private* networks.
+
+How it works: the PC app runs a tiny HTTP server on port 8737 (only answers requests carrying the
+pairing code); the phone pulls the PC's data, merges it (last-write-wins per record, with tombstones for
+deletions), uploads/downloads missing photos, and both sides store the merged result. PC data lives in
+`%APPDATA%\Garasi` (`data.json` + `photos\`) — copy that folder to back it up.
+
+Desktop limits: no camera/ML Kit on PC (photo quality checks use the same pixel metrics but no object
+framing; "Identify from photos" is phone-only); crop is a centre square crop.
 
 ---
 
@@ -78,6 +99,9 @@ fine, but the next CI build has a different key, so Android will refuse to *upda
 ### Command line
 Requirements: JDK 17, Android SDK (set `ANDROID_HOME` or create `local.properties`
 with `sdk.dir=/path/to/Android/sdk`).
+
+Windows app: `./gradlew :desktop:run` (try it), `./gradlew :desktop:packageMsi` (installer, run on Windows),
+`./gradlew :desktop:createDistributable` (portable folder).
 
 ```bash
 cd Garasi333
@@ -177,6 +201,15 @@ Do these on a real phone (Android 8+), ideally once in light and once in dark mo
 - [ ] Copy both languages → description has Indonesian, divider, English.
 - [ ] Mark posted with pasted URL → link opens. Status becomes Posted.
 - [ ] Mark sold on one platform → reminder lists the other listings. Stats update (sold, IDR earned, days to sell).
+
+**PC sync**
+- [ ] Windows: install the MSI, open Garasi → Sync shows a QR code and "Ready — waiting for your phone".
+- [ ] Phone: Settings → Set up PC sync → Scan QR code → "Synced ✓". Items + photos appear on the PC.
+- [ ] Edit a title on the PC → open the phone app → the change is there. Edit on the phone → tap sync → shows on PC.
+- [ ] Delete an item on one side → it disappears on the other after the next sync.
+- [ ] Close Garasi on the PC → phone sync icon turns red with a clear message; reopen → sync works again.
+- [ ] PC: Ask AI opens Claude/ChatGPT/Gemini with the prompt; Paste AI answer fills the fields.
+- [ ] PC: Post → copy title/description/price, "Save photos to folder" opens Explorer with the photos.
 
 **Backup**
 - [ ] Export backup → zip saved. Delete an item → Import → item and photos are back.
